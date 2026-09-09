@@ -12,10 +12,11 @@ Build a simple 2D physics engine incrementally. Keep each step small, testable, 
 
 ## 2. Particles
 
-* [ ] Implement `Particle`
-* [ ] Position, velocity, acceleration, mass
-* [ ] Implement basic time integration
-* [ ] Verify constant-velocity motion
+* [x] Implement `Particle`
+* [x] Position, velocity, mass
+* [ ] Implement basic time integration: Update()
+* [x] Verify constant-velocity motion
+* [ ] Implement acceleration. Should this be stored in the Particle struct or be retrieved in Update()?
 
 ## 3. World
 
