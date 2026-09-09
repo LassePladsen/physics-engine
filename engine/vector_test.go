@@ -9,7 +9,7 @@ func TestVec2EqualsWithTol(t *testing.T) {
 	ensure := func(u, v Vec2, expected bool) {
 		got := u.EqualsWithTol(v)
 		if expected != got {
-			t.Fatalf("Vec2.EqualsWithTol failed: expected %+v, got %+v. u=%+v, v=%+v", expected, got, u, v)
+			t.Fatalf("Vec2.EqualsWithTol failed: expected %v, got %v. u=%v, v=%v", expected, got, u, v)
 		}
 	}
 	ensure(Vec2{1.5, -10}, Vec2{1.499999999999999999999999999999999999999999999999999999, -10.000000000000000000000000000000000000000000000001}, true)
@@ -21,7 +21,7 @@ func TestVec2Add(t *testing.T) {
 	equals := func(u, v, expected Vec2) {
 		got := u.Add(v)
 		if got != expected {
-			t.Fatalf("Vec2.Add failed: expected %+v, got %+v. u=%+v, v=%+v", expected, got, u, v)
+			t.Fatalf("Vec2.Add failed: expected %v, got %v. u=%v, v=%v", expected, got, u, v)
 		}
 	}
 
@@ -33,7 +33,7 @@ func TestVec2Sub(t *testing.T) {
 	equals := func(u, v, expected Vec2) {
 		got := u.Sub(v)
 		if got != expected {
-			t.Fatalf("Vec2.Sub failed: expected %+v, got %+v. u=%+v, v=%+v", expected, got, u, v)
+			t.Fatalf("Vec2.Sub failed: expected %v, got %v. u=%v, v=%v", expected, got, u, v)
 		}
 	}
 
@@ -46,7 +46,7 @@ func TestVec2Dot(t *testing.T) {
 	equals := func(u, v Vec2, expected float64) {
 		got := u.Dot(v)
 		if got != expected {
-			t.Fatalf("Vec2.Dot failed: expected %+v, got %+v. u=%+v, v=%+v", expected, got, u, v)
+			t.Fatalf("Vec2.Dot failed: expected %v, got %v. u=%v, v=%v", expected, got, u, v)
 		}
 	}
 
@@ -58,7 +58,7 @@ func TestVec2Mul(t *testing.T) {
 	equals := func(u Vec2, scalar float64, expected Vec2) {
 		got := u.Mul(scalar)
 		if got != expected {
-			t.Fatalf("Vec2.Mul failed: expected %+v, got %+v. u=%+v, scalar=%+v", expected, got, u, scalar)
+			t.Fatalf("Vec2.Mul failed: expected %v, got %v. u=%v, scalar=%v", expected, got, u, scalar)
 		}
 	}
 
@@ -75,7 +75,7 @@ func TestVec2Length(t *testing.T) {
 	equals := func(u Vec2, expected float64) {
 		got := u.Length()
 		if math.Abs(got - expected) >= tol {
-			t.Fatalf("Vec2.Length failed: expected %+v, got %+v. u=%+v", expected, got, u)
+			t.Fatalf("Vec2.Length failed: expected %v, got %v. u=%v", expected, got, u)
 		}
 	}
 
@@ -91,7 +91,7 @@ func TestVec2Normalize(t *testing.T) {
 	equals := func(u Vec2, expected Vec2) {
 		got := u.Normalize()
 		if !expected.EqualsWithTol(got){
-			t.Fatalf("Vec2.Normalize failed: expected %+v, got %+v. u=%+v", expected, got, u)
+			t.Fatalf("Vec2.Normalize failed: expected %v, got %v. u=%v", expected, got, u)
 		}
 	}
 
