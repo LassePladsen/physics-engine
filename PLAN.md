@@ -6,9 +6,9 @@ Build a simple 2D physics engine incrementally. Keep each step small, testable, 
 
 ## 1. Math Foundation
 
-* [ ] Implement `Vec2`
-* [ ] Add: `Add`, `Sub`, `Mul`, `Dot`, `Length`, `Normalize`
-* [ ] Add unit tests
+* [x] Implement `Vec2`
+* [x] Add: `Add`, `Sub`, `Mul`, `Dot`, `Length`, `Normalize`
+* [x] Add unit tests
 
 ## 2. Particles
 
