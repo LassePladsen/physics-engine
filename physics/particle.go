@@ -1,10 +1,10 @@
-package engine
+package physics
 
 type Particle2D struct {
-	Mass float64 // kg
-	Position Vec2 // m from origo (0, 0)
-	Velocity Vec2 // m/s
-	//Radius float64
+	Mass float64
+	Position Vec2
+	Velocity Vec2
+	Radius float64
 	// TODO: acceleration
 }
 
