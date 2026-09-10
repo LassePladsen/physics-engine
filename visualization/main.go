@@ -28,9 +28,7 @@ func (g *Game) Update() error {
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	bounds := screen.Bounds().Size()
-	centerX := bounds.X / 2
-	centerY := bounds.Y / 2
-	drawCircle(screen, centerX, centerY, 20, color.White)
+	drawCircle(screen, bounds.X / 2, bounds.Y / 2, 15, color.White)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -40,7 +38,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 // Unfilled circle at (x, y)
 func drawCircle(screen *ebiten.Image, x, y int, radius int, clr color.Color) {
 	// Draw pixels completely around the x,y center point in a 360 degree = 2pi radians
-	for degrees := range(361) { //
+	for degrees := range(361) {
 		radians := float64(degrees) * math.Pi / 180
 		ix := float64(radius) * math.Cos(radians)
 		iy := float64(radius) * math.Sin(radians)
@@ -49,9 +47,14 @@ func drawCircle(screen *ebiten.Image, x, y int, radius int, clr color.Color) {
 }
 
 func main() {
+	mw, mh := ebiten.Monitor().Size()
+	w := mw * 2/3
+	h := mh * 2/3
+	x := (mw - w) / 2
+	y := (mh - h) / 2
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	w, h := ebiten.Monitor().Size()
 	ebiten.SetWindowSize(w, h)
+	ebiten.SetWindowPosition(x, y)
 	ebiten.SetWindowTitle("Physics Engine")
 	if err := ebiten.RunGame(&Game{}); err != nil {
 		if err.Error() != "" {
