@@ -14,7 +14,7 @@ Build a simple 2D physics engine incrementally. Keep each step small, testable, 
 
 * [x] Implement `Particle`
 * [x] Position, velocity, mass
-* [ ] Implement basic time integration: Update()
+* [x] Implement basic time integration: Update()
 * [x] Verify constant-velocity motion
 * [ ] Implement acceleration. Should this be stored in the Particle struct or be retrieved in Update()?
 
