@@ -6,15 +6,24 @@ import (
 	"log"
 	"math"
 
+	"github.com/LassePladsen/physics-engine/physics"
 	"github.com/hajimehoshi/ebiten/v2"
 )
+
+const dt = 0.1
 
 func getMonitorCenter() (int, int) {
 	w, h := ebiten.Monitor().Size()
 	return w / 2, h / 2
 }
 
-type Game struct{}
+func round(x float64) int {
+	return int(math.Round(x))
+}
+
+type Game struct {
+	Particle physics.Particle2D
+}
 
 func (g *Game) Update() error {
 	// Exit on esc, q, and ctrl-c
@@ -23,12 +32,15 @@ func (g *Game) Update() error {
 		(ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyC)) {
 		return errors.New("")
 	}
+	g.Particle.Update(dt)
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	bounds := screen.Bounds().Size()
-	drawCircle(screen, bounds.X / 2, bounds.Y / 2, 15, color.White)
+	// bounds := screen.Bounds().Size()
+	// drawCircle(screen, bounds.X / 2, bounds.Y / 2, 15, color.White)
+
+	drawCircle(screen, round(g.Particle.Position.X), round(g.Particle.Position.Y), 15, color.White)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -38,25 +50,32 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 // Unfilled circle at (x, y)
 func drawCircle(screen *ebiten.Image, x, y int, radius int, clr color.Color) {
 	// Draw pixels completely around the x,y center point in a 360 degree = 2pi radians
-	for degrees := range(361) {
+	for degrees := range 361 {
 		radians := float64(degrees) * math.Pi / 180
 		ix := float64(radius) * math.Cos(radians)
 		iy := float64(radius) * math.Sin(radians)
-		screen.Set(x + int(math.Round(ix)), y + int(math.Round(iy)), clr)
+		screen.Set(x+round(ix), y+round(iy), clr)
 	}
 }
 
 func main() {
 	mw, mh := ebiten.Monitor().Size()
-	w := mw * 2/3
-	h := mh * 2/3
+	w := mw * 2 / 3
+	h := mh * 2 / 3
 	x := (mw - w) / 2
 	y := (mh - h) / 2
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowSize(w, h)
 	ebiten.SetWindowPosition(x, y)
 	ebiten.SetWindowTitle("Physics Engine")
-	if err := ebiten.RunGame(&Game{}); err != nil {
+
+	var radius float64 = 20
+	game := Game{physics.Particle2D{
+		Position: physics.Vec2{X: radius, Y: float64(y)},
+		Velocity: physics.Vec2Right().Mul(80),
+		Radius:   radius,
+	}}
+	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {
 			log.Fatal(err)
 		}

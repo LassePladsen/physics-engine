@@ -28,9 +28,9 @@ Build a simple 2D physics engine incrementally. Keep each step small, testable, 
 
 ## 4. Visualization
 
-* [ ] Create simple 2D visualization
-* [ ] Render particles
-* [ ] Run simulation loop
+* [x] Create simple 2D visualization
+* [x] Render particles
+* [x] Run simulation loop
 * [ ] Visualize gravity and motion
 
 ## 5. Boundaries
