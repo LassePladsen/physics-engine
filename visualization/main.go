@@ -4,7 +4,10 @@ import (
 	"errors"
 	"image/color"
 	"log"
+	"log/slog"
 	"math"
+	"os"
+	"strings"
 
 	"github.com/LassePladsen/physics-engine/physics"
 	"github.com/hajimehoshi/ebiten/v2"
@@ -12,17 +15,24 @@ import (
 
 const dt = 0.1
 
-func getMonitorCenter() (int, int) {
-	w, h := ebiten.Monitor().Size()
-	return w / 2, h / 2
-}
-
-func round(x float64) int {
-	return int(math.Round(x))
-}
+var Log *slog.Logger
+var logLevel slog.Level
 
 type Game struct {
 	Particle physics.Particle2D
+}
+
+// Keeps particles in-bounds by bouncing it back
+func (g *Game) checkBounds() {
+	maxX, maxY := ebiten.ScreenSize()
+	if g.Particle.Position.X+g.Particle.Radius > float64(maxX) ||
+		g.Particle.Position.X-g.Particle.Radius < 0 {
+		g.Particle.Velocity.X *= -1
+	}
+	if g.Particle.Position.Y+g.Particle.Radius > float64(maxY) ||
+		g.Particle.Position.Y-g.Particle.Radius < 0 {
+		g.Particle.Velocity.Y *= -1
+	}
 }
 
 func (g *Game) Update() error {
@@ -33,6 +43,7 @@ func (g *Game) Update() error {
 		return errors.New("")
 	}
 	g.Particle.Update(dt)
+	g.checkBounds()
 	return nil
 }
 
@@ -58,7 +69,32 @@ func drawCircle(screen *ebiten.Image, x, y int, radius int, clr color.Color) {
 	}
 }
 
+func initLogging() {
+	logLevel = slog.LevelInfo
+
+	// Show debug logging with `LOG_LEVEL=DEBUG go run ...`
+	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "debug") {
+		logLevel = slog.LevelDebug
+	}
+
+	Log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: logLevel,
+	}))
+}
+
+func getMonitorCenter() (int, int) {
+	w, h := ebiten.Monitor().Size()
+	return w / 2, h / 2
+}
+
+func round(x float64) int {
+	return int(math.Round(x))
+}
+
+
 func main() {
+	initLogging()
+
 	mw, mh := ebiten.Monitor().Size()
 	w := mw * 2 / 3
 	h := mh * 2 / 3
@@ -69,10 +105,11 @@ func main() {
 	ebiten.SetWindowPosition(x, y)
 	ebiten.SetWindowTitle("Physics Engine")
 
-	var radius float64 = 20
+	const radius float64 = 20
+	const speed float64 = 100
 	game := Game{physics.Particle2D{
 		Position: physics.Vec2{X: radius, Y: float64(y)},
-		Velocity: physics.Vec2Right().Mul(80),
+		Velocity: physics.Vec2{X: speed, Y: 0},
 		Radius:   radius,
 	}}
 	if err := ebiten.RunGame(&game); err != nil {
