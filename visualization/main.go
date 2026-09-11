@@ -12,9 +12,9 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-const fps = 60
-const dt = 1 / fps // s
-const gravity = -9.81 // m/s^2
+const fps = 60.0
+const dt = 1 / fps
+const gravityAcceleration = 9.81 // m/s^2
 const pixelsPerMeter = 100
 
 var Paused = false
@@ -25,20 +25,20 @@ type Game struct {
 
 // Keeps particles in-bounds by bouncing it back, also truncate it back to current window sise
 func (g *Game) ensureInBounds() {
-	tmpX, tmpY := ebiten.ScreenSize()
-	maxX := float64(tmpX)
-	maxY := float64(tmpY)
-	logger.Debugf("checkBounds: maxX, maxY: (%v, %v)", maxX, maxY)
-	logger.Debugf("checkBounds: Particle: %+v", g.Particle)
-	if g.Particle.Position.X+g.Particle.Radius > maxX ||
+	screenWidth, screenHeight := ebiten.ScreenSize()
+	width := pixelsToMeters(screenWidth)
+	height := pixelsToMeters(screenHeight)
+	logger.Debugf("ensureInBounds: maxX, maxY: (%v, %v)", width, height)
+	logger.Debugf("ensureInBounds: Particle: %+v", g.Particle)
+	if g.Particle.Position.X+g.Particle.Radius > width ||
 		g.Particle.Position.X-g.Particle.Radius < 0 {
 		g.Particle.Velocity.X *= -1
-		g.Particle.Position.X = min(max(g.Particle.Radius, g.Particle.Position.X+g.Particle.Radius), maxX-g.Particle.Radius)
+		g.Particle.Position.X = min(max(g.Particle.Radius, g.Particle.Position.X+g.Particle.Radius), width-g.Particle.Radius)
 	}
-	if g.Particle.Position.Y+g.Particle.Radius > maxY ||
+	if g.Particle.Position.Y+g.Particle.Radius > height ||
 		g.Particle.Position.Y-g.Particle.Radius < 0 {
 		g.Particle.Velocity.Y *= -1
-		g.Particle.Position.Y = min(max(g.Particle.Radius, g.Particle.Position.Y+g.Particle.Radius), maxY-g.Particle.Radius)
+		g.Particle.Position.Y = min(max(g.Particle.Radius, g.Particle.Position.Y+g.Particle.Radius), height-g.Particle.Radius)
 	}
 }
 
@@ -69,10 +69,11 @@ func (g *Game) Update() error {
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	// bounds := screen.Bounds().Size()
-	// drawCircle(screen, bounds.X / 2, bounds.Y / 2, 15, color.White)
-
-	drawCircle(screen, round(g.Particle.Position.X), round(g.Particle.Position.Y), 15, color.White)
+	_, screenHeight := ebiten.ScreenSize()
+	// NB: positive y is down, so reverse the y by subtracting from height
+	y := metersToPixels(pixelsToMeters(screenHeight) - g.Particle.Position.Y)
+	x := metersToPixels(g.Particle.Position.X)
+	drawCircle(screen, x, y, metersToPixels(g.Particle.Radius), color.White)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
@@ -99,6 +100,15 @@ func round(x float64) int {
 	return int(math.Round(x))
 }
 
+func pixelsToMeters(pixels int) float64 {
+	return float64(pixels) / pixelsPerMeter
+}
+
+// Rounds to nearest int
+func metersToPixels(meters float64) int {
+	return round(meters * pixelsPerMeter)
+}
+
 func main() {
 	logger.Init()
 
@@ -107,18 +117,20 @@ func main() {
 	h := mh * 2 / 3
 	x := (mw - w) / 2
 	y := (mh - h) / 2
+
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowSize(w, h)
 	ebiten.SetWindowPosition(x, y)
 	ebiten.SetWindowTitle("Physics Engine")
 	ebiten.SetTPS(fps)
 
-	const radius float64 = 20
+	radius := 0.2 // m
+
 	game := Game{physics.Particle2D{
-		Position: physics.Vec2{X: radius, Y: float64(y)},
-		Velocity: physics.Vec2{X: 1*pixelsPerMeter, Y: 0},
-		Acceleration: physics.Vec2Down().Mul(gravity*pixelsPerMeter), // Constant acc as of now. NB: downards is positive y
-		Radius:   radius,
+		Position:     physics.Vec2{X: radius, Y: pixelsToMeters(mh / 2)},
+		Velocity:     physics.Vec2{X: 1, Y: 0},
+		Acceleration: physics.Vec2Down().Mul(gravityAcceleration), // Constant acc as of now. NB: downwards is positive y
+		Radius:       radius,
 	}}
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {
