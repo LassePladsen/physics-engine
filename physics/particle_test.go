@@ -4,13 +4,13 @@ import (
 	"testing"
 )
 
-func TestParticle2Update(t *testing.T) {
+func TestParticle2Step(t *testing.T) {
 	// TODO: acceleration
 	movedTo := func(p Particle2D, expectedPosition Vec2, dt float64) {
 		oldP := p
-		p.Update(dt)
+		p.Step(dt)
 		if !p.Position.EqualsWithTol(expectedPosition) {
-			t.Fatalf("Particle2d.Update moved to the wrong position: expected %v, got %v. particle=%+v", expectedPosition, p.Position, oldP)
+			t.Fatalf("Particle2d.Step moved to the wrong position: expected %v, got %v. particle=%+v", expectedPosition, p.Position, oldP)
 		}
 	}
 
@@ -23,10 +23,10 @@ func TestParticle2Update(t *testing.T) {
 	oldP := p
 	iters := 1000
 	for range(iters) {
-		p.Update(1)
+		p.Step(1)
 	}
 	expectedPosition := Vec2{-900, 5}
 	if !p.Position.EqualsWithTol(expectedPosition) {
-		t.Fatalf("Particle2d.Update moved to the wrong position after %v iterations: expected %v, got %v. particle=%+v", iters, expectedPosition, p.Position, oldP)
+		t.Fatalf("Particle2d.Step moved to the wrong position after %v iterations: expected %v, got %v. particle=%+v", iters, expectedPosition, p.Position, oldP)
 	}
 }

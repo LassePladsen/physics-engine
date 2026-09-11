@@ -59,7 +59,7 @@ func (g *Game) Update() error {
 		return nil
 	}
 
-	g.Particle.Update(dt)
+	g.Particle.Step(dt)
 	g.checkBounds()
 	return nil
 }
