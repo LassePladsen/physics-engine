@@ -1,11 +1,11 @@
-1. Math
-2. particle
-3. visulization
-4. Bounce in bounds
-5. gravity
-6. array of particles
-7. Global gravity
-8. Particle-to-particle gravity?
+- [x] Math
+- [x] particle
+- [x] visulization
+- [x] Bounce in bounds
+- [ ] Global gravity: maybe add acceleration logic in particle?
+- [ ] gravity
+- [ ] array of particles
+- [ ] Particle-to-particle gravity?
 
 Below is a plan made by chatGPT just in case I feel lost in terms of what to focus on next.
 

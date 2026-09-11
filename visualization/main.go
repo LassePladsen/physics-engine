@@ -6,7 +6,7 @@ import (
 	"math"
 	"os"
 
-	l "github.com/LassePladsen/physics-engine/logger"
+	"github.com/LassePladsen/physics-engine/logger"
 	"github.com/LassePladsen/physics-engine/physics"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
@@ -14,7 +14,7 @@ import (
 
 const dt = 0.1
 
-var paused = false
+var Paused = false
 
 type Game struct {
 	Particle physics.Particle2D
@@ -25,8 +25,8 @@ func (g *Game) checkBounds() {
 	tmpX, tmpY := ebiten.ScreenSize()
 	maxX := float64(tmpX)
 	maxY := float64(tmpY)
-	l.Debugf("checkBounds: maxX, maxY: (%v, %v)", maxX, maxY)
-	l.Debugf("checkBounds: Particle: %+v", g.Particle)
+	logger.Debugf("checkBounds: maxX, maxY: (%v, %v)", maxX, maxY)
+	logger.Debugf("checkBounds: Particle: %+v", g.Particle)
 	if g.Particle.Position.X+g.Particle.Radius > maxX ||
 		g.Particle.Position.X-g.Particle.Radius < 0 {
 		g.Particle.Velocity.X *= -1
@@ -35,6 +35,7 @@ func (g *Game) checkBounds() {
 	if g.Particle.Position.Y+g.Particle.Radius > maxY ||
 		g.Particle.Position.Y-g.Particle.Radius < 0 {
 		g.Particle.Velocity.Y *= -1
+		g.Particle.Position.Y = min(max(g.Particle.Radius, g.Particle.Position.Y+g.Particle.Radius), maxY-g.Particle.Radius)
 	}
 }
 
@@ -48,14 +49,14 @@ func (g *Game) Update() error {
 
 	// Toggle pause on p
 	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
-		paused = !paused
-		msg := "Simulation unpaused!"
-		if paused {
-			msg = "Simulation paused!"
+		Paused = !Paused
+		msg := "Simulation unpaused"
+		if Paused {
+			msg = "Simulation paused"
 		}
-		l.Info(msg)
+		logger.Info(msg)
 	}
-	if paused {
+	if Paused {
 		return nil
 	}
 
@@ -96,7 +97,7 @@ func round(x float64) int {
 }
 
 func main() {
-	l.Init()
+	logger.Init()
 
 	mw, mh := ebiten.Monitor().Size()
 	w := mw * 2 / 3
@@ -117,7 +118,7 @@ func main() {
 	}}
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {
-			l.Error(err.Error())
+			logger.Error(err.Error())
 			os.Exit(1)
 		}
 		os.Exit(0)
