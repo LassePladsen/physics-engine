@@ -3,8 +3,9 @@ package physics
 import "math"
 
 const tolerance = 1e-9
+
 func FloatEquals(first, second float64) bool {
-	return math.Abs(first - second) < tolerance
+	return math.Abs(first-second) < tolerance
 }
 
 type Vec2 struct {
@@ -38,7 +39,7 @@ func Vec2Down() Vec2 {
 
 // Checks if two vectors are the same within a small floating point error tolerance.
 func (u Vec2) EqualsWithTol(other Vec2) bool {
-	return math.Abs(u.X - other.X) < tolerance && math.Abs(u.Y - other.Y) < tolerance
+	return math.Abs(u.X-other.X) < tolerance && math.Abs(u.Y-other.Y) < tolerance
 }
 
 func (u Vec2) Add(other Vec2) Vec2 {

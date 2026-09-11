@@ -1,8 +1,8 @@
 package physics
 
 import (
-	"testing"
 	"math"
+	"testing"
 )
 
 func TestVec2EqualsWithTol(t *testing.T) {
@@ -41,7 +41,6 @@ func TestVec2Sub(t *testing.T) {
 	equals(Vec2{-10, 0}, Vec2{-100, -5}, Vec2{90, 5})
 }
 
-
 func TestVec2Dot(t *testing.T) {
 	equals := func(u, v Vec2, expected float64) {
 		got := u.Dot(v)
@@ -50,8 +49,8 @@ func TestVec2Dot(t *testing.T) {
 		}
 	}
 
-	equals(Vec2{0.5, 100}, Vec2{1, -50}, 0.5*1 + 100*(-50))
-	equals(Vec2{-0.1, 0}, Vec2{-100, -5}, -0.1*(-100) + 0*(-5))
+	equals(Vec2{0.5, 100}, Vec2{1, -50}, 0.5*1+100*(-50))
+	equals(Vec2{-0.1, 0}, Vec2{-100, -5}, -0.1*(-100)+0*(-5))
 }
 
 func TestVec2Mul(t *testing.T) {
@@ -74,7 +73,7 @@ func TestVec2Length(t *testing.T) {
 	tol := 0.001
 	equals := func(u Vec2, expected float64) {
 		got := u.Length()
-		if math.Abs(got - expected) >= tol {
+		if math.Abs(got-expected) >= tol {
 			t.Fatalf("Vec2.Length failed: expected %v, got %v. u=%v", expected, got, u)
 		}
 	}
@@ -90,7 +89,7 @@ func TestVec2Length(t *testing.T) {
 func TestVec2Normalize(t *testing.T) {
 	equals := func(u Vec2, expected Vec2) {
 		got := u.Normalize()
-		if !expected.EqualsWithTol(got){
+		if !expected.EqualsWithTol(got) {
 			t.Fatalf("Vec2.Normalize failed: expected %v, got %v. u=%v", expected, got, u)
 		}
 	}
