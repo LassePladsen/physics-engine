@@ -4,19 +4,15 @@ import (
 	"errors"
 	"image/color"
 	"log"
-	"log/slog"
 	"math"
-	"os"
-	"strings"
 
+	l "github.com/LassePladsen/physics-engine/logger"
 	"github.com/LassePladsen/physics-engine/physics"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
 const dt = 0.1
 
-var Log *slog.Logger
-var logLevel slog.Level
 
 type Game struct {
 	Particle physics.Particle2D
@@ -25,6 +21,7 @@ type Game struct {
 // Keeps particles in-bounds by bouncing it back
 func (g *Game) checkBounds() {
 	maxX, maxY := ebiten.ScreenSize()
+	l.Debugf("maxX, maxY: (%s, %s)", maxX, maxY)
 	if g.Particle.Position.X+g.Particle.Radius > float64(maxX) ||
 		g.Particle.Position.X-g.Particle.Radius < 0 {
 		g.Particle.Velocity.X *= -1
@@ -69,19 +66,6 @@ func drawCircle(screen *ebiten.Image, x, y int, radius int, clr color.Color) {
 	}
 }
 
-func initLogging() {
-	logLevel = slog.LevelInfo
-
-	// Show debug logging with `LOG_LEVEL=DEBUG go run ...`
-	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "debug") {
-		logLevel = slog.LevelDebug
-	}
-
-	Log = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: logLevel,
-	}))
-}
-
 func getMonitorCenter() (int, int) {
 	w, h := ebiten.Monitor().Size()
 	return w / 2, h / 2
@@ -93,7 +77,7 @@ func round(x float64) int {
 
 
 func main() {
-	initLogging()
+	l.Init()
 
 	mw, mh := ebiten.Monitor().Size()
 	w := mw * 2 / 3

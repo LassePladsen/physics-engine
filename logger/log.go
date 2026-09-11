@@ -1,0 +1,48 @@
+package logger
+
+import (
+	"fmt"
+	"log/slog"
+	"os"
+	"strings"
+)
+
+var Logger *slog.Logger
+var LoggerLevel slog.Level
+
+func Init() {
+	LoggerLevel = slog.LevelInfo
+
+	// Show debug logging with `LOG_LEVEL=DEBUG go run ...`
+	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "debug") {
+		LoggerLevel = slog.LevelDebug
+	}
+
+	Logger = slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: LoggerLevel,
+	}))
+}
+
+func Debug(msg string) {
+	Logger.Debug(msg)
+}
+
+func Info(msg string) {
+	Logger.Info(msg)
+}
+
+func Error(msg string) {
+	Logger.Error(msg)
+}
+
+func Debugf(msg string, vars ...any) {
+	Logger.Debug(fmt.Sprintf(msg, vars...))
+}
+
+func Infof(msg string, vars ...any) {
+	Logger.Info(fmt.Sprintf(msg, vars...))
+}
+
+func Errorf(msg string, vars ...any) {
+	Logger.Error(fmt.Sprintf(msg, vars...))
+}
