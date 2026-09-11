@@ -30,8 +30,8 @@ var keyboard keyboardState = ebitenKeyboardState{}
 
 type registeredKeybind struct {
 	keys        []ebiten.Key
-	callbacks   []keybindCallback
-	onJustPress bool
+	callbacks   []func()
+	onJustPress bool // if callback only on the frame the key is pressed
 }
 
 func (r *registeredKeybind) isPressed() bool {
@@ -49,14 +49,19 @@ func (r *registeredKeybind) isPressed() bool {
 	return false
 }
 
+func (r *registeredKeybind) invokeIfPressed() {
+	if !r.isPressed() {
+		return
+	}
+	for _, callback := range r.callbacks {
+		callback()
+	}
+
+}
+
 // keybindCallbacks is indexed by the canonical form of a combination. The
 // registered value retains the normalized keys needed when dispatching.
 var keybindCallbacks = make(map[string]*registeredKeybind)
-
-type keybindCallback struct {
-	fn          func()
-	onJustPress bool // if callback only on the frame the key is pressed
-}
 
 // AddKeybind registers a callback for a combination of any number
 // of keys. Key order and duplicate keys do not affect the combination.
@@ -72,17 +77,13 @@ func AddKeybind(callback func(), onJustPress bool, keys ...ebiten.Key) {
 		keybind = &registeredKeybind{keys: normalizedKeys}
 		keybindCallbacks[id] = keybind
 	}
-	keybind.callbacks = append(keybind.callbacks, keybindCallback{callback, onJustPress})
+	keybind.callbacks = append(keybind.callbacks, callback)
 }
 
 // Runs all keybinds if the corresponding keys are pressed
 func RunKeybinds() {
 	for _, keybind := range keybindCallbacks {
-		for _, callback := range keybind.callbacks {
-			if keybind.isPressed() {
-				callback.fn()
-			}
-		}
+		keybind.invokeIfPressed()
 	}
 }
 
