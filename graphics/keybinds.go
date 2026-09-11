@@ -74,7 +74,7 @@ func AddKeybind(callback func(), onJustPress bool, keys ...ebiten.Key) {
 	id := canonicalKey(normalizedKeys)
 	keybind, ok := keybindCallbacks[id]
 	if !ok {
-		keybind = &registeredKeybind{keys: normalizedKeys}
+		keybind = &registeredKeybind{keys: normalizedKeys, onJustPress: onJustPress}
 		keybindCallbacks[id] = keybind
 	}
 	keybind.callbacks = append(keybind.callbacks, callback)
