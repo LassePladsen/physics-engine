@@ -29,8 +29,29 @@ func (ebitenKeyboardState) IsKeyJustPressed(key ebiten.Key) bool {
 var keyboard keyboardState = ebitenKeyboardState{}
 
 type registeredKeybind struct {
-	keys      []ebiten.Key
-	callbacks []keybindCallback
+	keys        []ebiten.Key
+	callbacks   []keybindCallback
+	onJustPress bool
+}
+
+func (r *registeredKeybind) isPressed() bool {
+	if len(r.keys) == 0 {
+		return false
+	}
+	pressed := false
+	for _, key := range r.keys {
+		if r.onJustPress {
+			if keyboard.IsKeyJustPressed(key) {
+				pressed = true
+			}
+		} else {
+			if keyboard.IsKeyPressed(key) {
+				pressed = true
+			}
+		}
+	}
+
+	return pressed
 }
 
 // keybindCallbacks is indexed by the canonical form of a combination. The
@@ -59,31 +80,15 @@ func AddKeybind(callback func(), onJustPress bool, keys ...ebiten.Key) {
 	keybind.callbacks = append(keybind.callbacks, keybindCallback{callback, onJustPress})
 }
 
+// Runs all keybinds if the corresponding keys are pressed
 func RunKeybinds() {
 	for _, keybind := range keybindCallbacks {
 		for _, callback := range keybind.callbacks {
-			if areKeysPressed(keybind.keys, callback.onJustPress) {
+			if keybind.isPressed() {
 				callback.fn()
 			}
 		}
 	}
-}
-
-func areKeysPressed(keys []ebiten.Key, justPressed bool) bool {
-	if len(keys) == 0 {
-		return false
-	}
-	anyJustPressed := false
-	for _, key := range keys {
-		if !keyboard.IsKeyPressed(key) {
-			return false
-		}
-		if keyboard.IsKeyJustPressed(key) {
-			anyJustPressed = true
-		}
-	}
-
-	return !justPressed || anyJustPressed
 }
 
 func normalizeKeys(keys []ebiten.Key) []ebiten.Key {

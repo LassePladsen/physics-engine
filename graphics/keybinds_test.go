@@ -91,7 +91,7 @@ func TestAddKeybindCombinationIgnoresEmptyCombination(t *testing.T) {
 	}
 }
 
-func TestRunKeybindsRequiresAllKeysAndHonorsJustPress(t *testing.T) {
+func TestRunKeybindsRunsCallbacksWhenAnyCombinationKeyIsHeld(t *testing.T) {
 	state := &simulatedKeyboard{
 		held:        map[ebiten.Key]bool{ebiten.KeyControl: true},
 		justPressed: map[ebiten.Key]bool{ebiten.KeyControl: true},
@@ -102,19 +102,20 @@ func TestRunKeybindsRequiresAllKeysAndHonorsJustPress(t *testing.T) {
 	AddKeybind(func() { normalCalls++ }, false, ebiten.KeyControl, ebiten.KeyC)
 	AddKeybind(func() { justPressCalls++ }, true, ebiten.KeyC, ebiten.KeyControl)
 	RunKeybinds()
-	if normalCalls != 0 || justPressCalls != 0 {
-		t.Fatalf("incomplete combination calls = normal %d, just press %d; want 0, 0", normalCalls, justPressCalls)
+	if normalCalls != 1 || justPressCalls != 1 {
+		t.Fatalf("one held combination key calls = normal %d, just press %d; want 1, 1", normalCalls, justPressCalls)
 	}
 
 	state.held[ebiten.KeyC] = true
 	RunKeybinds()
-	if normalCalls != 1 || justPressCalls != 1 {
-		t.Fatalf("held combination calls = normal %d, just press %d; want 1, 1", normalCalls, justPressCalls)
+	if normalCalls != 2 || justPressCalls != 2 {
+		t.Fatalf("two held combination keys calls = normal %d, just press %d; want 2, 2", normalCalls, justPressCalls)
 	}
 
+	state.held = map[ebiten.Key]bool{}
 	state.justPressed = map[ebiten.Key]bool{}
 	RunKeybinds()
-	if normalCalls != 2 || justPressCalls != 1 {
-		t.Fatalf("held combination without new press = normal %d, just press %d; want 2, 1", normalCalls, justPressCalls)
+	if normalCalls != 2 || justPressCalls != 2 {
+		t.Fatalf("no held combination keys calls = normal %d, just press %d; want 2, 2", normalCalls, justPressCalls)
 	}
 }
