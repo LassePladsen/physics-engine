@@ -20,16 +20,19 @@ type Game struct {
 	Particle physics.Particle2D
 }
 
-// Keeps particles in-bounds by bouncing it back
+// Keeps particles in-bounds by bouncing it back, also truncate it back to current window sise
 func (g *Game) checkBounds() {
-	maxX, maxY := ebiten.ScreenSize()
+	tmpX, tmpY := ebiten.ScreenSize()
+	maxX := float64(tmpX)
+	maxY := float64(tmpY)
 	l.Debugf("checkBounds: maxX, maxY: (%v, %v)", maxX, maxY)
 	l.Debugf("checkBounds: Particle: %+v", g.Particle)
-	if g.Particle.Position.X+g.Particle.Radius > float64(maxX) ||
+	if g.Particle.Position.X+g.Particle.Radius > maxX ||
 		g.Particle.Position.X-g.Particle.Radius < 0 {
 		g.Particle.Velocity.X *= -1
+		g.Particle.Position.X = min(max(g.Particle.Radius, g.Particle.Position.X+g.Particle.Radius), maxX-g.Particle.Radius)
 	}
-	if g.Particle.Position.Y+g.Particle.Radius > float64(maxY) ||
+	if g.Particle.Position.Y+g.Particle.Radius > maxY ||
 		g.Particle.Position.Y-g.Particle.Radius < 0 {
 		g.Particle.Velocity.Y *= -1
 	}
@@ -48,7 +51,7 @@ func (g *Game) Update() error {
 		paused = !paused
 		msg := "Simulation unpaused!"
 		if paused {
-			msg = "Simulation unpaused!"
+			msg = "Simulation paused!"
 		}
 		l.Info(msg)
 	}

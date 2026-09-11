@@ -1,4 +1,13 @@
-This is a plan made by chatGPT just in case I feel lost in terms of what to focus on next.
+1. Math
+2. particle
+3. visulization
+4. Bounce in bounds
+5. gravity
+6. array of particles
+7. Global gravity
+8. Particle-to-particle gravity?
+
+Below is a plan made by chatGPT just in case I feel lost in terms of what to focus on next.
 
 # Physics Engine Plan
 
@@ -18,7 +27,14 @@ Build a simple 2D physics engine incrementally. Keep each step small, testable, 
 * [x] Verify constant-velocity motion
 * [ ] Implement acceleration. Should this be stored in the Particle struct or be retrieved in Update()?
 
-## 3. World
+## 3. Visualization
+
+* [x] Create simple 2D visualization
+* [x] Render particles
+* [x] Run simulation loop
+* [ ] Visualize gravity and motion
+
+## 4. World
 
 * [ ] Implement `World`
 * [ ] Store particles
@@ -26,12 +42,6 @@ Build a simple 2D physics engine incrementally. Keep each step small, testable, 
 * [ ] Add configurable gravity
 * [ ] Verify free-fall motion
 
-## 4. Visualization
-
-* [x] Create simple 2D visualization
-* [x] Render particles
-* [x] Run simulation loop
-* [ ] Visualize gravity and motion
 
 ## 5. Boundaries
 
