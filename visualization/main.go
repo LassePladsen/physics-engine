@@ -3,16 +3,18 @@ package main
 import (
 	"errors"
 	"image/color"
-	"log"
 	"math"
+	"os"
 
 	l "github.com/LassePladsen/physics-engine/logger"
 	"github.com/LassePladsen/physics-engine/physics"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 const dt = 0.1
 
+var paused = false
 
 type Game struct {
 	Particle physics.Particle2D
@@ -21,7 +23,8 @@ type Game struct {
 // Keeps particles in-bounds by bouncing it back
 func (g *Game) checkBounds() {
 	maxX, maxY := ebiten.ScreenSize()
-	l.Debugf("maxX, maxY: (%s, %s)", maxX, maxY)
+	l.Debugf("checkBounds: maxX, maxY: (%v, %v)", maxX, maxY)
+	l.Debugf("checkBounds: Particle: %+v", g.Particle)
 	if g.Particle.Position.X+g.Particle.Radius > float64(maxX) ||
 		g.Particle.Position.X-g.Particle.Radius < 0 {
 		g.Particle.Velocity.X *= -1
@@ -39,6 +42,20 @@ func (g *Game) Update() error {
 		(ebiten.IsKeyPressed(ebiten.KeyControl) && ebiten.IsKeyPressed(ebiten.KeyC)) {
 		return errors.New("")
 	}
+
+	// Toggle pause on p
+	if inpututil.IsKeyJustPressed(ebiten.KeyP) {
+		paused = !paused
+		msg := "Simulation unpaused!"
+		if paused {
+			msg = "Simulation unpaused!"
+		}
+		l.Info(msg)
+	}
+	if paused {
+		return nil
+	}
+
 	g.Particle.Update(dt)
 	g.checkBounds()
 	return nil
@@ -75,7 +92,6 @@ func round(x float64) int {
 	return int(math.Round(x))
 }
 
-
 func main() {
 	l.Init()
 
@@ -98,7 +114,9 @@ func main() {
 	}}
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {
-			log.Fatal(err)
+			l.Error(err.Error())
+			os.Exit(1)
 		}
+		os.Exit(0)
 	}
 }
