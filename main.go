@@ -32,14 +32,14 @@ func main() {
 	graphics.DeltaTime = 1 / fps
 
 	// Keybinds
-	graphics.AddKeybind(ebiten.KeyP, graphics.TogglePause, true)
+	graphics.AddKeybind(graphics.TogglePause, true, ebiten.KeyP)
 
 	exit := func() {
 		os.Exit(0)
 	}
-	graphics.AddKeybind(ebiten.KeyEscape, exit, false)
-	graphics.AddKeybind(ebiten.KeyQ, exit, false)
-	graphics.AddKeybindCombination([]ebiten.Key{ebiten.KeyC, ebiten.KeyControl}, exit, false)
+	graphics.AddKeybind(exit, false, ebiten.KeyEscape)
+	graphics.AddKeybind(exit, false, ebiten.KeyQ)
+	graphics.AddKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
 
 	game := graphics.Game{Particle: physics.Particle2D{
 		Position:     physics.Vec2{X: radius, Y: graphics.PixelsToMeters(mh / 2)},
