@@ -1,7 +1,7 @@
 package graphics
 
 import (
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -35,23 +35,18 @@ type registeredKeybind struct {
 }
 
 func (r *registeredKeybind) isPressed() bool {
-	if len(r.keys) == 0 {
-		return false
+	isKeyPressed := keyboard.IsKeyPressed
+	if r.onJustPress {
+		isKeyPressed = keyboard.IsKeyJustPressed
 	}
-	pressed := false
+
 	for _, key := range r.keys {
-		if r.onJustPress {
-			if keyboard.IsKeyJustPressed(key) {
-				pressed = true
-			}
-		} else {
-			if keyboard.IsKeyPressed(key) {
-				pressed = true
-			}
+		if isKeyPressed(key) {
+			return true
 		}
 	}
 
-	return pressed
+	return false
 }
 
 // keybindCallbacks is indexed by the canonical form of a combination. The
@@ -93,22 +88,12 @@ func RunKeybinds() {
 
 func normalizeKeys(keys []ebiten.Key) []ebiten.Key {
 	normalized := append([]ebiten.Key(nil), keys...)
-	sort.Slice(normalized, func(i, j int) bool { return normalized[i] < normalized[j] })
-
-	if len(normalized) == 0 {
-		return normalized
-	}
-
-	unique := normalized[:1]
-	for _, key := range normalized[1:] {
-		if key != unique[len(unique)-1] {
-			unique = append(unique, key)
-		}
-	}
-	return unique
+	slices.Sort(normalized)
+	return slices.Compact(normalized)
 }
 
 func canonicalKey(keys []ebiten.Key) string {
+	// Delimiters preserve boundaries between key values (for example, 1+23 vs 12+3).
 	var builder strings.Builder
 	for _, key := range keys {
 		builder.WriteString(strconv.Itoa(int(key)))
