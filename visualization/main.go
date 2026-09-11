@@ -13,6 +13,7 @@ import (
 )
 
 const dt = 0.1
+const gravity = -9.81
 
 var Paused = false
 
@@ -21,7 +22,7 @@ type Game struct {
 }
 
 // Keeps particles in-bounds by bouncing it back, also truncate it back to current window sise
-func (g *Game) checkBounds() {
+func (g *Game) ensureInBounds() {
 	tmpX, tmpY := ebiten.ScreenSize()
 	maxX := float64(tmpX)
 	maxY := float64(tmpY)
@@ -61,7 +62,7 @@ func (g *Game) Update() error {
 	}
 
 	g.Particle.Step(dt)
-	g.checkBounds()
+	g.ensureInBounds()
 	return nil
 }
 
@@ -110,10 +111,10 @@ func main() {
 	ebiten.SetWindowTitle("Physics Engine")
 
 	const radius float64 = 20
-	const speed float64 = 100
 	game := Game{physics.Particle2D{
 		Position: physics.Vec2{X: radius, Y: float64(y)},
-		Velocity: physics.Vec2{X: speed, Y: 0},
+		Velocity: physics.Vec2{X: 100, Y: 0},
+		Acceleration: physics.Vec2Down().Mul(gravity), // Constant acc as of now
 		Radius:   radius,
 	}}
 	if err := ebiten.RunGame(&game); err != nil {
