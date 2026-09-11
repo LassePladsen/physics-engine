@@ -1,11 +1,11 @@
 package physics
 
 type Particle2D struct {
-	Mass float64
-	Position Vec2
-	Velocity Vec2
-	Acceleration Vec2
-	Radius float64
+	Mass float64 // kg
+	Position Vec2 // m
+	Velocity Vec2 // m/s
+	Acceleration Vec2 // m/s^2
+	Radius float64 // m
 }
 
 // Moves the particle one step in the future, dt is the time delta change. low value is recommended for accurate results, e.g 0.001 or even lower.

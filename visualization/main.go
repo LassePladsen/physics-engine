@@ -12,8 +12,10 @@ import (
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
-const dt = 0.1
-const gravity = -9.81
+const fps = 60
+const dt = 1 / fps // s
+const gravity = -9.81 // m/s^2
+const pixelsPerMeter = 100
 
 var Paused = false
 
@@ -109,12 +111,13 @@ func main() {
 	ebiten.SetWindowSize(w, h)
 	ebiten.SetWindowPosition(x, y)
 	ebiten.SetWindowTitle("Physics Engine")
+	ebiten.SetTPS(fps)
 
 	const radius float64 = 20
 	game := Game{physics.Particle2D{
 		Position: physics.Vec2{X: radius, Y: float64(y)},
-		Velocity: physics.Vec2{X: 100, Y: 0},
-		Acceleration: physics.Vec2Down().Mul(gravity), // Constant acc as of now
+		Velocity: physics.Vec2{X: 1*pixelsPerMeter, Y: 0},
+		Acceleration: physics.Vec2Down().Mul(gravity*pixelsPerMeter), // Constant acc as of now. NB: downards is positive y
 		Radius:   radius,
 	}}
 	if err := ebiten.RunGame(&game); err != nil {
