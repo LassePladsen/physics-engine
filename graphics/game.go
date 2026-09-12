@@ -25,7 +25,7 @@ type Game struct {
 func (g *Game) DrawAll(screen *ebiten.Image) {
 	_, screenHeight := ebiten.ScreenSize()
 	for _, particle := range g.World.Particles {
-		// NB: positive y is down, so reverse the y by subtracting from height
+		// Physics uses positive Y upwards; screen coordinates use positive Y downwards.
 		y := MetersToPixels(PixelsToMeters(screenHeight) - particle.Position.Y)
 		x := MetersToPixels(particle.Position.X)
 		drawCircle(screen, x, y, MetersToPixels(particle.Radius), color.White)

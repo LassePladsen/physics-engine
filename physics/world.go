@@ -11,10 +11,12 @@ type World struct {
 	Particles               []Particle2D
 	ParticleRestitution     float64 // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
 	WindowBoundsRestitution float64 // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
+	lastDeltaTime           float64
 }
 
 // Advances every particle in the world by deltaTime seconds.
 func (w *World) Step(deltaTime float64) {
+	w.lastDeltaTime = deltaTime
 	for i := range w.Particles {
 		w.Particles[i].Step(deltaTime)
 	}
@@ -46,14 +48,15 @@ func (w *World) DoCollisions(restitution float64) {
 
 // EnsureParticlesInBounds keeps every particle inside a world with the given
 // dimensions. Side walls and the ceiling reflect velocity; the bottom boundary
-// is a resting surface, so it removes downward velocity.
+// is a resting surface, so it removes downward velocity. Physics coordinates
+// use positive Y upwards.
 func (w *World) EnsureParticlesInBounds(width, height float64) {
 	for i := range w.Particles {
-		ensureParticleInBounds(&w.Particles[i], width, height, w.WindowBoundsRestitution)
+		ensureParticleInBounds(&w.Particles[i], width, height, w.WindowBoundsRestitution, w.lastDeltaTime)
 	}
 }
 
-func ensureParticleInBounds(particle *Particle2D, width, height float64, restitution float64) {
+func ensureParticleInBounds(particle *Particle2D, width, height, restitution, deltaTime float64) {
 	logger.Debugf("Ensuring inbounds (%v, %v) for %+v", width, height, particle)
 	changed := false
 	if particle.Position.X+particle.Radius > width ||
@@ -64,11 +67,18 @@ func ensureParticleInBounds(particle *Particle2D, width, height float64, restitu
 	}
 	if particle.Position.Y-particle.Radius < 0 {
 		particle.Velocity.Y *= -restitution
+		// A rebound that is smaller than gravity adds in one tick cannot lift the
+		// particle off the ground, so treat it as resting instead of micro-bouncing.
+		// This stops endless bouncing
+		if particle.Acceleration.Y < 0 &&
+			particle.Velocity.Y <= -particle.Acceleration.Y*deltaTime {
+			particle.Velocity.Y = 0
+		}
 		particle.Position.Y = particle.Radius
 		changed = true
 	}
 	if particle.Position.Y+particle.Radius > height {
-		particle.Velocity.Y = 0
+		particle.Velocity.Y *= -restitution
 		particle.Position.Y = height - particle.Radius
 		changed = true
 	}

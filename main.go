@@ -13,7 +13,7 @@ import (
 const TicksPerSecond = 60.0
 const gravityAcceleration = 9.81 // m/s^2
 const particleRestitution = 0.2
-const windowBoundsRestitution = 0.1
+const windowBoundsRestitution = 0.55
 
 func main() {
 	logger.Init()
@@ -46,7 +46,7 @@ func main() {
 		Radius:       radius,
 		Position:     physics.Vec2{X: radius * 1.5, Y: graphics.PixelsToMeters(monitorHeight / 2)},
 		Velocity:     physics.Vec2{X: 5, Y: 0},
-		Acceleration: physics.Vec2Down().Mul(gravityAcceleration), // Constant acc as of now. NB: downwards is positive y
+		Acceleration: physics.Vec2Down().Mul(gravityAcceleration), // Constant downward acceleration
 	}
 	p2 := p1
 	p2.Position.X = graphics.PixelsToMeters(windowWidth) - p1.Position.X
