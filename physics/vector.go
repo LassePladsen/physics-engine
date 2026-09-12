@@ -37,6 +37,27 @@ func Vec2Down() Vec2 {
 	return Vec2{0, -1}
 }
 
+// Diagonal upwards to the right. (1/sqrt(2), 1/sqrt(2))
+func Vec2UpRight() Vec2 {
+	return Vec2{1 / math.Sqrt2, 1 / math.Sqrt2}
+}
+
+// Diagonal upwards to the left. (-1/sqrt(2), 1/sqrt(2))
+func Vec2UpLeft() Vec2 {
+	return Vec2{-1 / math.Sqrt2, 1 / math.Sqrt2}
+}
+
+// Diagonal downwards to the right. (1/sqrt(2), -1/sqrt(2))
+func Vec2DownRight() Vec2 {
+	return Vec2{1 / math.Sqrt2, -1 / math.Sqrt2}
+}
+
+// Diagonal downwards to the left. (-1/sqrt(2), -1/sqrt(2))
+func Vec2DownLeft() Vec2 {
+	return Vec2{-1 / math.Sqrt2, -1 / math.Sqrt2}
+}
+
+
 // Checks if two vectors are the same within a given tolerance
 func (u Vec2) EqualsWithTol(other Vec2, tolerance float64) bool {
 	return math.Abs(u.X-other.X) < tolerance && math.Abs(u.Y-other.Y) < tolerance
