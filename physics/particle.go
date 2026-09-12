@@ -16,7 +16,7 @@ func (p *Particle2D) Step(deltaTime float64) {
 	p.Position = p.Position.Add(p.Velocity.Mul(deltaTime))
 }
 
-// Adds to particles acceleration by dividing force by mass
+// Adds to particles acceleration using Newton's first law: acceleration = force / mass
 func (p *Particle2D) ApplyForce(force Vec2) {
-	p.Acceleration.Add(force)
+	p.Acceleration.Add(force.Mul(p.Mass))
 }

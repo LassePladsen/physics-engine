@@ -1,3 +1,5 @@
+// Keybindings state and helpers
+
 package graphics
 
 import (

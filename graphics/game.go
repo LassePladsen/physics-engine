@@ -1,3 +1,6 @@
+// The main game state logic for the rendering engine
+
+// The graphics rendering logic
 package graphics
 
 import (
@@ -14,6 +17,7 @@ const pixelsPerMeter = 100
 var Paused = false
 var DeltaTime = 0.01 // seconds
 
+// The main state for the rendering game engine
 type Game struct {
 	Particle physics.Particle2D
 }
