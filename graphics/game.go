@@ -46,7 +46,7 @@ func (g *Game) Update() error {
 func (g *Game) Step() {
 	g.World.Step(g.DeltaTime)
 	screenWidth, screenHeight := ebiten.ScreenSize()
-	g.World.EnsureParticlesInBounds(PixelsToMeters(screenWidth), PixelsToMeters(screenHeight))
+	g.World.EnsureParticlesInBoundary(PixelsToMeters(screenWidth), PixelsToMeters(screenHeight))
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {

@@ -48,50 +48,69 @@ func (w *World) DoCollisions(restitution float64) {
 	}
 }
 
-// EnsureParticlesInBounds keeps every particle inside a world with the given
-// dimensions. Side walls and the ceiling reflect velocity; the bottom boundary
-// is a resting surface, so it removes downward velocity. Physics coordinates
-// use positive Y upwards.
-func (w *World) EnsureParticlesInBounds(width, height float64) {
+// keeps every particle inside a world with the given boundary dimensions
+func (w *World) EnsureParticlesInBoundary(width, height float64) {
 	for i := range w.Particles {
-		w.ensureParticleInBounds(&w.Particles[i], width, height)
+		w.ensureParticleInBoundary(&w.Particles[i], width, height)
 	}
 }
 
-func (w *World) ensureParticleInBounds(particle *Particle2D, width, height float64) {
+func (w *World) ensureParticleInBoundary(particle *Particle2D, width, height float64) {
+	var hitBoundaryNormal Vec2
+	hitBoundary := false
+
 	// Right bounce
 	if particle.Position.X+particle.Radius > width {
 		particle.Velocity.X *= -w.WindowBoundsRestitution
 		particle.Position.X = width - particle.Radius
-		w.applyBoundaryFriction(particle, UnitLeft())
+		normal := UnitLeft()
+		w.applyBoundaryFriction(particle, normal)
+		if w.Gravity.Dot(normal) < 0 {
+			hitBoundaryNormal, hitBoundary = normal, true
+		}
 	}
 
 	// Left bounce
 	if particle.Position.X-particle.Radius < 0 {
 		particle.Velocity.X *= -w.WindowBoundsRestitution
 		particle.Position.X = particle.Radius
-		w.applyBoundaryFriction(particle, UnitRight())
+		normal := UnitRight()
+		w.applyBoundaryFriction(particle, normal)
+		if w.Gravity.Dot(normal) < 0 {
+			hitBoundaryNormal, hitBoundary = normal, true
+		}
 	}
 
 	// Top bounce
 	if particle.Position.Y+particle.Radius > height {
 		particle.Velocity.Y *= -w.WindowBoundsRestitution
 		particle.Position.Y = height - particle.Radius //
-		w.applyBoundaryFriction(particle, UnitDown())
+		normal := UnitDown()
+		w.applyBoundaryFriction(particle, normal)
+		if w.Gravity.Dot(normal) < 0 {
+			hitBoundaryNormal, hitBoundary = normal, true
+		}
 	}
 
 	// Ground bounce
 	if particle.Position.Y-particle.Radius < 0 {
 		particle.Velocity.Y *= -w.WindowBoundsRestitution
 		particle.Position.Y = particle.Radius
-		w.applyBoundaryFriction(particle, UnitUp())
+		normal := UnitUp()
+		w.applyBoundaryFriction(particle, normal)
+		if w.Gravity.Dot(normal) < 0 {
+			hitBoundaryNormal, hitBoundary = normal, true
+		}
 	}
 
-	// A rebound that is smaller than gravity adds in one tick cannot lift the
-	// particle off the wall/ground, so treat it as resting instead of endless micro-bouncing.
-	v_g := particle.Velocity.LengthInDirection(w.Gravity)
-	if v_g >= -w.Gravity.Length()*w.lastDeltaTime {
-		particle.Velocity = particle.Velocity.SetLengthInDirection(0, w.Gravity)
+	// Fix endless microbouncing: A rebound that is smaller than gravity adds in one tick cannot lift the
+	// particle off the wall/ground, so treat it as resting instead of bounce
+	if hitBoundary {
+		normalVelocity := particle.Velocity.Dot(hitBoundaryNormal)
+		gravityPerTick := -w.Gravity.Dot(hitBoundaryNormal) * w.lastDeltaTime
+		if normalVelocity <= gravityPerTick {
+			particle.Velocity = particle.Velocity.SetLengthInDirection(0, hitBoundaryNormal)
+		}
 	}
 }
 

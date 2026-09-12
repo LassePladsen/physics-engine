@@ -130,11 +130,10 @@ func (u Vec2) LengthInDirection(direction Vec2) float64 {
 }
 
 // Sets vector u's scalar length in the direction of other vector
-// u' = u - (u*v)v where v is the unit vector of 'other'
+// u' = u - (u*v)v + newLength*v where v is the unit vector of 'other'
 func (u Vec2) SetLengthInDirection(newLength float64, direction Vec2) Vec2 {
 	unit := direction.Normalize()
-	subtraction := unit.Mul(u.Dot(unit))
-	return u.Sub(subtraction)
+	return u.Sub(unit.Mul(u.Dot(unit))).Add(unit.Mul(newLength))
 }
 
 func AddVectors(vectors ...Vec2) Vec2 {

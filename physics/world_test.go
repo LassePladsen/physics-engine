@@ -90,7 +90,7 @@ func TestWorldEnsureParticlesInBoundsStopsParticleOnBottomBoundary(t *testing.T)
 
 	for range 10 {
 		world.Step(1.0 / 60.0)
-		world.EnsureParticlesInBounds(10, 10)
+		world.EnsureParticlesInBoundary(10, 10)
 	}
 
 	particle := world.Particles[0]
@@ -110,18 +110,35 @@ func TestWorldEnsureParticlesInBoundsBouncesBeforeSettlingOnGround(t *testing.T)
 	}}}
 
 	world.Step(1.0 / 60.0)
-	world.EnsureParticlesInBounds(10, 10)
+	world.EnsureParticlesInBoundary(10, 10)
 	if got := world.Particles[0].Velocity.Y; !FloatEquals(got, 0.31635) {
 		t.Fatalf("velocity after first ground impact = %v, want 0.31635", got)
 	}
 
 	for range 300 {
 		world.Step(1.0 / 60.0)
-		world.EnsureParticlesInBounds(10, 10)
+		world.EnsureParticlesInBoundary(10, 10)
 	}
 
 	if got := world.Particles[0].Velocity.Y; got != 0 {
 		t.Errorf("velocity after settling = %v, want 0", got)
+	}
+}
+
+func TestWorldEnsureParticlesInBoundsDoesNotCancelAirborneGravity(t *testing.T) {
+	world := World{
+		Gravity: Vec2{Y: -9.81},
+		Particles: []Particle2D{{
+			Position: Vec2{X: 5, Y: 5},
+			Radius:   1,
+		}},
+	}
+
+	world.Step(1.0 / 60.0)
+	world.EnsureParticlesInBoundary(10, 10)
+
+	if got, want := world.Particles[0].Velocity.Y, -9.81/60.0; !FloatEquals(got, want) {
+		t.Errorf("airborne vertical velocity = %v, want %v", got, want)
 	}
 }
 
@@ -169,7 +186,7 @@ func TestWorldEnsureParticlesInBoundsAppliesGroundFrictionWithoutReversing(t *te
 				lastDeltaTime: 0.5,
 			}
 
-			world.EnsureParticlesInBounds(10, 10)
+			world.EnsureParticlesInBoundary(10, 10)
 			if got := world.Particles[0].Velocity; !got.ApproxEquals(tt.want) {
 				t.Errorf("velocity = %v, want %v", got, tt.want)
 			}

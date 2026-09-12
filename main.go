@@ -15,7 +15,7 @@ const deltaTime = 1 / ticksPerSecond
 const gravityAcceleration = 9.81 // m/s^2
 const particleRestitution = 0.2
 const windowBoundsRestitution = 0.5
-const friction = 0.8
+const friction = 0.1
 
 func main() {
 	logger.Init()
