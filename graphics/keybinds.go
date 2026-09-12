@@ -43,12 +43,12 @@ func (r *registeredKeybind) isPressed() bool {
 	}
 
 	for _, key := range r.keys {
-		if isKeyPressed(key) {
-			return true
+		if !isKeyPressed(key) {
+			return false
 		}
 	}
 
-	return false
+	return true
 }
 
 func (r *registeredKeybind) invokeIfPressed() {
