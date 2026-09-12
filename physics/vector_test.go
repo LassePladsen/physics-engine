@@ -88,14 +88,23 @@ func TestVec2Length(t *testing.T) {
 
 func TestVec2Normalize(t *testing.T) {
 	equals := func(u Vec2, expected Vec2) {
-		got := u.Normalize()
-		if !expected.AlmostEquals(got) {
+		if got := u.Normalize(); !expected.AlmostEquals(got) {
 			t.Fatalf("Vec2.Normalize failed: expected %v, got %v. u=%v", expected, got, u)
 		}
 	}
 
-	equals(Vec2{1, 1}, Vec2{math.Sqrt(1), math.Sqrt(1)})
+	equals(Vec2{1, 1}, Vec2{1 / math.Sqrt(2), 1 / math.Sqrt(2)})
 	equals(Vec2{-15150, 0}, Vec2Left())
 	equals(Vec2{0, 100}, Vec2Up())
-	equals(Vec2{-10, -10}, Vec2{-math.Sqrt(1), -math.Sqrt(1)})
+	equals(Vec2{-10, -10}, Vec2{-1 / math.Sqrt(2), -1 / math.Sqrt(2)})
+
+	ensureLength := func(u Vec2) {
+		if got := u.Normalize().Length(); math.Abs(got - 1) >= tolerance {
+			t.Fatalf("Vec2.Normalize failed: new length should be 1, got %v. u=%v", got, u)
+
+		}
+	}
+	ensureLength(Vec2{1, 1})
+	ensureLength(Vec2{-5, 10})
+	ensureLength(Vec2{12300, 500})
 }

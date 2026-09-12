@@ -75,14 +75,8 @@ func (u Vec2) Length() float64 {
 
 func (u Vec2) Normalize() Vec2 {
 	// Check division by zero
-	if math.Abs(u.X) < tolerance && math.Abs(u.Y) < tolerance {
+	if u.Length() < tolerance {
 		return Vec2Zero()
 	}
-	if math.Abs(u.X) < tolerance {
-		return Vec2{0, math.Abs(u.Y) / u.Y}
-	}
-	if math.Abs(u.Y) < tolerance {
-		return Vec2{math.Abs(u.X) / u.X, 0}
-	}
-	return Vec2{math.Abs(u.X) / u.X, math.Abs(u.Y) / u.Y}
+	return u.Mul(1 / u.Length())
 }
