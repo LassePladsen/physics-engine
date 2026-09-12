@@ -43,3 +43,18 @@ func (p Particle2D) ElasticCollision(other Particle2D) (Particle2D, Particle2D) 
 	return newP, newOther
 }
 
+
+// Returns whether the particles are touching
+func (p Particle2D) ShouldCollide(other Particle2D) bool {
+	return p.CircumferenceDistanceTo(other) == 0
+}
+
+// Returns the distance from the CENTERS of the particles (not the circumference)
+func (p Particle2D) DistanceTo(other Particle2D) float64 {
+	return p.Position.DistanceTo(other.Position)
+}
+
+// Returns the distance from the particles' circumferences
+func (p Particle2D) CircumferenceDistanceTo(other Particle2D) float64 {
+	return max(0, p.DistanceTo(other) - p.Radius - other.Radius)
+}

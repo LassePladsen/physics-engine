@@ -111,3 +111,38 @@ func TestParticle2DElasticCollisionPanicsWhenMassesSumToZero(t *testing.T) {
 
 	p.ElasticCollision(other)
 }
+
+func TestParticle2DShouldCollide(t *testing.T) {
+	tests := []struct {
+		name            string
+		particle, other Particle2D
+		want            bool
+	}{
+		{
+			name:     "overlapping particles",
+			particle: Particle2D{Position: Vec2{0, 0}, Radius: 2},
+			other:    Particle2D{Position: Vec2{3, 0}, Radius: 2},
+			want:     true,
+		},
+		{
+			name:     "particles touching at their circumferences",
+			particle: Particle2D{Position: Vec2{0, 0}, Radius: 2},
+			other:    Particle2D{Position: Vec2{5, 0}, Radius: 3},
+			want:     true,
+		},
+		{
+			name:     "particles separated beyond their radii",
+			particle: Particle2D{Position: Vec2{0, 0}, Radius: 2},
+			other:    Particle2D{Position: Vec2{5.1, 0}, Radius: 3},
+			want:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.particle.ShouldCollide(tt.other); got != tt.want {
+				t.Errorf("ShouldCollide() = %t, want %t", got, tt.want)
+			}
+		})
+	}
+}

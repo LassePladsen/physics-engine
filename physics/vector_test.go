@@ -76,6 +76,28 @@ func TestVec2DotAndLength(t *testing.T) {
 	}
 }
 
+func TestVec2DistanceTo(t *testing.T) {
+	tests := []struct {
+		name     string
+		u, other Vec2
+		want     float64
+	}{
+		{"same point", Vec2{2, -3}, Vec2{2, -3}, 0},
+		{"horizontal", Vec2{-2, 4}, Vec2{5, 4}, 7},
+		{"vertical", Vec2{1, -6}, Vec2{1, 2}, 8},
+		{"three four five", Vec2{-1, 2}, Vec2{2, 6}, 5},
+		{"fractional mixed signs", Vec2{-0.5, 1.25}, Vec2{1, -0.75}, 2.5},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.u.DistanceTo(tt.other); !FloatEquals(got, tt.want) {
+				t.Fatalf("distance = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestVec2Normalize(t *testing.T) {
 	tests := []struct {
 		name    string

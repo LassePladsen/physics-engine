@@ -12,6 +12,21 @@ func (w *World) Step(deltaTime float64) {
 	}
 }
 
+func (w *World) DoCollisions() {
+	for i := range w.Particles {
+		u := w.Particles[i]
+		for j := range w.Particles {
+			v := w.Particles[j]
+			if u == v {
+				continue
+			}
+			if u.ShouldCollide(v) {
+				w.Particles[i], w.Particles[j] = u.ElasticCollision(v)
+			}
+		}
+	}
+}
+
 // EnsureParticlesInBounds keeps every particle inside a world with the given
 // dimensions, reflecting its velocity when it reaches an edge.
 func (w *World) EnsureParticlesInBounds(width, height float64) {
