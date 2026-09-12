@@ -1,5 +1,7 @@
 package physics
 
+import "github.com/LassePladsen/physics-engine/logger"
+
 // World contains the particles that make up a simulation.
 type World struct {
 	Particles []Particle2D
@@ -9,10 +11,11 @@ type World struct {
 func (w *World) Step(deltaTime float64) {
 	for i := range w.Particles {
 		w.Particles[i].Step(deltaTime)
+		w.DoCollisions(true) // change to inelastic here
 	}
 }
 
-func (w *World) DoCollisions() {
+func (w *World) DoCollisions(elastic bool) {
 	for i := range w.Particles {
 		u := w.Particles[i]
 		for j := range w.Particles {
@@ -20,8 +23,15 @@ func (w *World) DoCollisions() {
 			if u == v {
 				continue
 			}
-			if u.ShouldCollide(v) {
+			logger.Debugf("Checking collision for %+v and %+v", u, v)
+			if elastic && u.ShouldCollide(v) {
+				logger.Debug("They should elastically collide")
 				w.Particles[i], w.Particles[j] = u.ElasticCollision(v)
+			} else if u.ShouldCollide(v) {
+				logger.Debug("They should INelastically collide")
+				// TODO: w.Particles[i], w.Particles[j] = u.InelasticCollision(v)
+			} else {
+				logger.Debug("NO collision")
 			}
 		}
 	}

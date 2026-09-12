@@ -1,5 +1,7 @@
 package physics
 
+import "github.com/LassePladsen/physics-engine/logger"
+
 type Particle2D struct {
 	Mass         float64 // kg
 	Position     Vec2    // m
@@ -35,13 +37,17 @@ func (p Particle2D) ElasticCollision(other Particle2D) (Particle2D, Particle2D) 
 	newP := p
 	newP.Velocity = p.Velocity.Mul((p.Mass - other.Mass) / sumMasses).
 		Add(other.Velocity.Mul(2 * other.Mass / sumMasses))
+	logger.Debugf("ElasticCollision: p new velocity: %v", newP.Velocity)
 
 	newOther := other
 	newOther.Velocity = p.Velocity.Mul(2 * p.Mass / sumMasses).
 		Add(other.Velocity.Mul((other.Mass - p.Mass) / sumMasses))
+	logger.Debugf("ElasticCollision: other new velocity: %v", newP.Velocity)
 
 	return newP, newOther
 }
+
+// TODO: inelastic collision
 
 
 // Returns whether the particles are touching

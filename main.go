@@ -41,6 +41,7 @@ func main() {
 	graphics.AddKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
 
 	p1 := physics.Particle2D{
+		Mass: 1,
 		Position:     physics.Vec2{X: radius, Y: graphics.PixelsToMeters(monitorHeight / 2)},
 		Velocity:     physics.Vec2{X: 5, Y: 0},
 		Acceleration: physics.Vec2Down().Mul(gravityAcceleration), // Constant acc as of now. NB: downwards is positive y
