@@ -7,8 +7,10 @@ import (
 	"strings"
 )
 
-var Logger *slog.Logger
-var LoggerLevel slog.Level
+// Logger has a usable default so packages can log safely when they are used
+// outside the main executable, such as in tests.
+var Logger = slog.Default()
+var LoggerLevel = slog.LevelInfo
 
 func Init() {
 	LoggerLevel = slog.LevelInfo

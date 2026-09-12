@@ -47,12 +47,11 @@ func (p Particle2D) ElasticCollision(other Particle2D) (Particle2D, Particle2D) 
 	return newP, newOther
 }
 
-// TODO: inelastic collision
-// TODO: make elastic vs inelastic one parameter 0 <= e <= 1.
-// Returns whether the particles are touching
+// Returns whether the particles' circumferences touch or overlap.
 func (p Particle2D) IsTouching(other Particle2D) bool {
-	// To avoid turning back into each other after a collision we check if they are approcahing
-	return p.CircumferenceDistanceTo(other) < tolerance && p.IsApproaching(other)
+	// TODO: inelastic collision
+	// TODO: make elastic vs inelastic one parameter 0 <= e <= 1.
+	return p.CircumferenceDistanceTo(other) < tolerance
 }
 
 // Returns the distance from the CENTERS of the particles (not the circumference)
@@ -62,12 +61,12 @@ func (p Particle2D) DistanceTo(other Particle2D) float64 {
 
 // Returns the distance from the particles' circumferences
 func (p Particle2D) CircumferenceDistanceTo(other Particle2D) float64 {
-	return max(0, p.DistanceTo(other)-p.Radius-other.Radius)
+	return p.DistanceTo(other)-p.Radius-other.Radius
 }
 
-// If the two particles are approaching each other, meaning velocities are towards each other
+// Returns whether the particles are approaching each other
 func (p Particle2D) IsApproaching(other Particle2D) bool {
-	// Dot product is equal to product of lengths when vectors are parallell
-	// u * v = |u||v| * cos(angle)
-	return p.Velocity.Normalize().Dot(other.Velocity.Normalize()) == 1
+	separation := p.Position.Sub(other.Position)
+	relativeVelocity := p.Velocity.Sub(other.Velocity)
+	return separation.Dot(relativeVelocity) < 0
 }

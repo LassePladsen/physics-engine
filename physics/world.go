@@ -25,7 +25,7 @@ func (w *World) DoCollisions(elastic bool) {
 			v := w.Particles[j]
 			logger.Debugf("Checking collision for %+v and %+v", u, v)
 
-			if u.IsTouching(v) {
+			if u.IsTouching(v) && u.IsApproaching(v) {
 				logger.Debug("They should collide")
 				w.Particles[i], w.Particles[j] = u.ElasticCollision(v)
 			} else {logger.Debug("NO collision")}
