@@ -11,28 +11,24 @@ type World struct {
 func (w *World) Step(deltaTime float64) {
 	for i := range w.Particles {
 		w.Particles[i].Step(deltaTime)
-		w.DoCollisions(true) // change to inelastic here
 	}
+	w.DoCollisions(true) // change to inelastic here
 }
 
+// TODO: make elastic vs inelastic one parameter 0 <= e <= 1.
 func (w *World) DoCollisions(elastic bool) {
 	for i := range w.Particles {
 		u := w.Particles[i]
-		for j := range w.Particles {
+		// Each pair is unordered, so resolve it exactly once. Resolving both
+		// (i, j) and (j, i) reverses a head-on elastic collision immediately.
+		for j := i + 1; j < len(w.Particles); j++ {
 			v := w.Particles[j]
-			if u == v {
-				continue
-			}
 			logger.Debugf("Checking collision for %+v and %+v", u, v)
-			if elastic && u.ShouldCollide(v) {
-				logger.Debug("They should elastically collide")
+
+			if u.IsTouching(v) {
+				logger.Debug("They should collide")
 				w.Particles[i], w.Particles[j] = u.ElasticCollision(v)
-			} else if u.ShouldCollide(v) {
-				logger.Debug("They should INelastically collide")
-				// TODO: w.Particles[i], w.Particles[j] = u.InelasticCollision(v)
-			} else {
-				logger.Debug("NO collision")
-			}
+			} else {logger.Debug("NO collision")}
 		}
 	}
 }

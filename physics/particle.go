@@ -19,7 +19,7 @@ func (p *Particle2D) Step(deltaTime float64) {
 
 // Adds to particles acceleration using Newton's first law: acceleration = force / mass. Returns the new particle state
 func (p Particle2D) ApplyForce(force Vec2) Particle2D {
-	p.Acceleration = p.Acceleration.Add(force.Mul(1/p.Mass))
+	p.Acceleration = p.Acceleration.Add(force.Mul(1 / p.Mass))
 	return p
 }
 
@@ -42,17 +42,17 @@ func (p Particle2D) ElasticCollision(other Particle2D) (Particle2D, Particle2D) 
 	newOther := other
 	newOther.Velocity = p.Velocity.Mul(2 * p.Mass / sumMasses).
 		Add(other.Velocity.Mul((other.Mass - p.Mass) / sumMasses))
-	logger.Debugf("ElasticCollision: other new velocity: %v", newP.Velocity)
+	logger.Debugf("ElasticCollision: other new velocity: %v", newOther.Velocity)
 
 	return newP, newOther
 }
 
 // TODO: inelastic collision
-
-
+// TODO: make elastic vs inelastic one parameter 0 <= e <= 1.
 // Returns whether the particles are touching
-func (p Particle2D) ShouldCollide(other Particle2D) bool {
-	return p.CircumferenceDistanceTo(other) == 0
+func (p Particle2D) IsTouching(other Particle2D) bool {
+	// To avoid turning back into each other after a collision we check if they are approcahing
+	return p.CircumferenceDistanceTo(other) < tolerance && p.IsApproaching(other)
 }
 
 // Returns the distance from the CENTERS of the particles (not the circumference)
@@ -62,5 +62,12 @@ func (p Particle2D) DistanceTo(other Particle2D) float64 {
 
 // Returns the distance from the particles' circumferences
 func (p Particle2D) CircumferenceDistanceTo(other Particle2D) float64 {
-	return max(0, p.DistanceTo(other) - p.Radius - other.Radius)
+	return max(0, p.DistanceTo(other)-p.Radius-other.Radius)
+}
+
+// If the two particles are approaching each other, meaning velocities are towards each other
+func (p Particle2D) IsApproaching(other Particle2D) bool {
+	// Dot product is equal to product of lengths when vectors are parallell
+	// u * v = |u||v| * cos(angle)
+	return p.Velocity.Normalize().Dot(other.Velocity.Normalize()) == 1
 }

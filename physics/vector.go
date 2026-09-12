@@ -101,8 +101,7 @@ func (u Vec2) Normalize() Vec2 {
 	return u.Mul(1 / u.Length())
 }
 
-
 // Euclidean distance to another vector
 func (u Vec2) DistanceTo(other Vec2) float64 {
-	return math.Sqrt(math.Pow(u.X - other.X, 2) + math.Pow(u.Y - other.Y, 2))
+	return math.Sqrt(math.Pow(u.X-other.X, 2) + math.Pow(u.Y-other.Y, 2))
 }
