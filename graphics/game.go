@@ -15,11 +15,11 @@ import (
 const pixelsPerMeter = 100
 
 var Paused = false
-var DeltaTime = 0.01 // seconds
 
 // The main state for the rendering game engine
 type Game struct {
 	World physics.World
+	Tps   float64 // rendering ticks per second
 }
 
 func (g *Game) DrawAll(screen *ebiten.Image) {
@@ -39,7 +39,7 @@ func (g *Game) Update() error {
 		return nil
 	}
 
-	g.World.Step(DeltaTime)
+	g.World.Step(1 / g.Tps)
 	screenWidth, screenHeight := ebiten.ScreenSize()
 	g.World.EnsureParticlesInBounds(PixelsToMeters(screenWidth), PixelsToMeters(screenHeight))
 	return nil

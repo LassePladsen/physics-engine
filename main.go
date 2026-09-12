@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-const fps = 60.0
+const TicksPerSecond = 60.0
 const gravityAcceleration = 9.81 // m/s^2
 
 func main() {
@@ -26,10 +26,9 @@ func main() {
 	ebiten.SetWindowSize(windowWidth, windowHeight)
 	ebiten.SetWindowPosition(windowX, windowY)
 	ebiten.SetWindowTitle("Physics Engine")
-	ebiten.SetTPS(fps)
+	ebiten.SetTPS(TicksPerSecond)
 
 	radius := 0.2 // m
-	graphics.DeltaTime = 1 / fps
 
 	// Keybinds
 	graphics.AddKeybind(graphics.TogglePause, true, ebiten.KeyP)
@@ -50,7 +49,8 @@ func main() {
 	p2 := p1
 	p2.Position.X = float64(windowWidth) - p1.Position.X
 	p2.Velocity.X = -p1.Velocity.X
-	game := graphics.Game{World: physics.World{Particles: []physics.Particle2D{p1, p2}}}
+	p2.Mass = 2*p1.Mass
+	game := graphics.Game{Tps: TicksPerSecond, World: physics.World{Particles: []physics.Particle2D{p1, p2}}}
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {
 			logger.Error(err.Error())
