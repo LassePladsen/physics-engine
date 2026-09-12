@@ -13,8 +13,6 @@ var Logger = slog.Default()
 var LoggerLevel = slog.LevelInfo
 
 func Init() {
-	LoggerLevel = slog.LevelInfo
-
 	// Show debug logging with `LOG_LEVEL=DEBUG go run ...`
 	if strings.EqualFold(os.Getenv("LOG_LEVEL"), "debug") {
 		LoggerLevel = slog.LevelDebug

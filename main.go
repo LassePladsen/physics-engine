@@ -12,23 +12,22 @@ import (
 
 const TicksPerSecond = 60.0
 const gravityAcceleration = 9.81 // m/s^2
+const restitution = 0.2
 
 func main() {
 	logger.Init()
 
+	// Graphics config
 	monitorWidth, monitorHeight := ebiten.Monitor().Size()
 	windowWidth := monitorWidth * 2 / 3
 	windowHeight := monitorHeight * 2 / 3
 	windowX := (monitorWidth - windowWidth) / 2
 	windowY := (monitorHeight - windowHeight) / 2
-
 	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
 	ebiten.SetWindowSize(windowWidth, windowHeight)
 	ebiten.SetWindowPosition(windowX, windowY)
 	ebiten.SetWindowTitle("Physics Engine")
 	ebiten.SetTPS(TicksPerSecond)
-
-	radius := 0.2 // m
 
 	// Keybinds
 	graphics.AddKeybind(graphics.TogglePause, true, ebiten.KeyP)
@@ -39,6 +38,8 @@ func main() {
 	graphics.AddKeybind(exit, false, ebiten.KeyQ)
 	graphics.AddKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
 
+	// Particles
+	radius := 0.2 // m
 	p1 := physics.Particle2D{
 		Mass: 1,
 		Position:     physics.Vec2{X: radius, Y: graphics.PixelsToMeters(monitorHeight / 2)},
@@ -50,7 +51,9 @@ func main() {
 	p2.Position.X = float64(windowWidth) - p1.Position.X
 	p2.Velocity.X = -p1.Velocity.X
 	p2.Mass = 2*p1.Mass
-	game := graphics.Game{Tps: TicksPerSecond, World: physics.World{Particles: []physics.Particle2D{p1, p2}}}
+
+	// Init the simulation
+	game := graphics.Game{Tps: TicksPerSecond, World: physics.World{Restitution: restitution, Particles: []physics.Particle2D{p1, p2}}}
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {
 			logger.Error(err.Error())

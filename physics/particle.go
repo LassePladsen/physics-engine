@@ -1,6 +1,6 @@
 package physics
 
-import "github.com/LassePladsen/physics-engine/logger"
+import "math"
 
 type Particle2D struct {
 	Mass         float64 // kg
@@ -23,26 +23,29 @@ func (p Particle2D) ApplyForce(force Vec2) Particle2D {
 	return p
 }
 
-// Performs an elastic collision i.e no kinetic energy or momentum loss, returns the two new particle states (p, other).
-// Panics if the sum of their masses are zero, which should't never be the case.
+// Collide resolves a collision with the supplied coefficient of restitution and
+// returns the two new particle states (p, other). A restitution of 1 is a
+// perfectly elastic collision; 0 is perfectly inelastic.
+// Panics if the sum of the masses is zero or restitution is outside [0, 1].
 //
-// Conversation of momentum: m_1*v_1i + m_2*v_2i = m_1*v_1f + m_2*v_2f
+// Conservation of momentum: m_1*v_1i + m_2*v_2i = m_1*v_1f + m_2*v_2f
 //
-// Conservation of kinetic energy: 1/2*m_1*v_1i^2 + 1/2*m_2*v_2i^2 = 1/2*m_1*v_1f^2 + 1/2*m_2*v_2f^2
-func (p Particle2D) ElasticCollision(other Particle2D) (Particle2D, Particle2D) {
+// Kinetic energy is also conserved when restitution is 1.
+func (p Particle2D) Collide(other Particle2D, restitution float64) (Particle2D, Particle2D) {
+	if math.IsNaN(restitution) || restitution < 0 || restitution > 1 {
+		panic("Coefficient of restitution needs to be between 0 and 1, inclusive.")
+	}
 	sumMasses := p.Mass + other.Mass
 	if sumMasses == 0 {
-		panic("Particle2D.ElasticCollision: sum of particle masses are zero, the formulas will divide by zero.")
+		panic("sum of particle masses are zero, the formulas will divide by zero.")
 	}
 	newP := p
-	newP.Velocity = p.Velocity.Mul((p.Mass - other.Mass) / sumMasses).
-		Add(other.Velocity.Mul(2 * other.Mass / sumMasses))
-	logger.Debugf("ElasticCollision: p new velocity: %v", newP.Velocity)
+	newP.Velocity = AddVectors(p.Velocity.Mul(p.Mass), other.Velocity.Mul(other.Mass), other.Velocity.Sub(p.Velocity).Mul(restitution*other.Mass))
+	newP.Velocity = newP.Velocity.Mul(1 / sumMasses)
 
 	newOther := other
-	newOther.Velocity = p.Velocity.Mul(2 * p.Mass / sumMasses).
-		Add(other.Velocity.Mul((other.Mass - p.Mass) / sumMasses))
-	logger.Debugf("ElasticCollision: other new velocity: %v", newOther.Velocity)
+	newOther.Velocity = AddVectors(p.Velocity.Mul(p.Mass), other.Velocity.Mul(other.Mass), p.Velocity.Sub(other.Velocity).Mul(restitution*p.Mass))
+	newOther.Velocity = newOther.Velocity.Mul(1 / sumMasses)
 
 	return newP, newOther
 }
@@ -61,7 +64,7 @@ func (p Particle2D) DistanceTo(other Particle2D) float64 {
 
 // Returns the distance from the particles' circumferences
 func (p Particle2D) CircumferenceDistanceTo(other Particle2D) float64 {
-	return p.DistanceTo(other)-p.Radius-other.Radius
+	return p.DistanceTo(other) - p.Radius - other.Radius
 }
 
 // Returns whether the particles are approaching each other

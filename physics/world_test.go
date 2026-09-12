@@ -1,6 +1,9 @@
 package physics
 
-import "testing"
+import (
+	"math"
+	"testing"
+)
 
 func TestWorldStepUpdatesParticlesInPlace(t *testing.T) {
 	world := World{Particles: []Particle2D{{
@@ -16,7 +19,7 @@ func TestWorldStepUpdatesParticlesInPlace(t *testing.T) {
 	}
 }
 
-func TestWorldStepResolvesHeadOnCollisionOnce(t *testing.T) {
+func TestWorldStepResolvesHeadOnCollisionUsingDefaultRestitution(t *testing.T) {
 	world := World{Particles: []Particle2D{
 		{Mass: 1, Position: Vec2{X: 0, Y: 0}, Velocity: Vec2{X: 5, Y: 9.3195}, Radius: 0.2},
 		{Mass: 1, Position: Vec2{X: 0.4, Y: 0}, Velocity: Vec2{X: -5, Y: 9.3195}, Radius: 0.2},
@@ -24,11 +27,57 @@ func TestWorldStepResolvesHeadOnCollisionOnce(t *testing.T) {
 
 	world.Step(0)
 
-	if got := world.Particles[0].Velocity; !got.ApproxEquals(Vec2{X: -5, Y: 9.3195}) {
-		t.Errorf("first particle velocity = %v, want {-5 9.3195}", got)
+	if got := world.Particles[0].Velocity; !got.ApproxEquals(Vec2{X: -2.5, Y: 9.3195}) {
+		t.Errorf("first particle velocity = %v, want {-2.5 9.3195}", got)
 	}
-	if got := world.Particles[1].Velocity; !got.ApproxEquals(Vec2{X: 5, Y: 9.3195}) {
-		t.Errorf("second particle velocity = %v, want {5 9.3195}", got)
+	if got := world.Particles[1].Velocity; !got.ApproxEquals(Vec2{X: 2.5, Y: 9.3195}) {
+		t.Errorf("second particle velocity = %v, want {2.5 9.3195}", got)
+	}
+}
+
+func TestWorldDoCollisionsSkipsPairsThatAreNotApproachingOrTouching(t *testing.T) {
+	tests := []struct {
+		name      string
+		particles []Particle2D
+	}{
+		{
+			name: "touching but moving apart",
+			particles: []Particle2D{
+				{Mass: 1, Position: Vec2{0, 0}, Velocity: Vec2{-1, 0}, Radius: 1},
+				{Mass: 1, Position: Vec2{2, 0}, Velocity: Vec2{1, 0}, Radius: 1},
+			},
+		},
+		{
+			name: "approaching but separated",
+			particles: []Particle2D{
+				{Mass: 1, Position: Vec2{0, 0}, Velocity: Vec2{1, 0}, Radius: 1},
+				{Mass: 1, Position: Vec2{3, 0}, Velocity: Vec2{-1, 0}, Radius: 1},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			world := World{Particles: tt.particles}
+			want := append([]Particle2D(nil), world.Particles...)
+			world.DoCollisions(1)
+			if world.Particles[0] != want[0] || world.Particles[1] != want[1] {
+				t.Errorf("particles = %+v, want %+v", world.Particles, want)
+			}
+		})
+	}
+}
+
+func TestWorldDoCollisionsPanicsForInvalidRestitution(t *testing.T) {
+	for _, restitution := range []float64{-0.01, 1.01, math.NaN()} {
+		t.Run("invalid restitution", func(t *testing.T) {
+			world := World{}
+			defer func() {
+				if recover() == nil {
+					t.Fatal("DoCollisions did not panic")
+				}
+			}()
+			world.DoCollisions(restitution)
+		})
 	}
 }
 

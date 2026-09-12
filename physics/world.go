@@ -1,10 +1,15 @@
 package physics
 
-import "github.com/LassePladsen/physics-engine/logger"
+import (
+	"math"
+
+	"github.com/LassePladsen/physics-engine/logger"
+)
 
 // World contains the particles that make up a simulation.
 type World struct {
 	Particles []Particle2D
+	Restitution float64  // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
 }
 
 // Advances every particle in the world by deltaTime seconds.
@@ -12,11 +17,14 @@ func (w *World) Step(deltaTime float64) {
 	for i := range w.Particles {
 		w.Particles[i].Step(deltaTime)
 	}
-	w.DoCollisions(true) // change to inelastic here
+	w.DoCollisions(w.Restitution) // change to inelastic here
 }
 
-// TODO: make elastic vs inelastic one parameter 0 <= e <= 1.
-func (w *World) DoCollisions(elastic bool) {
+// Checks and runs collisions for each relevant particle. Panics if not: 0 <= resitution <= 1 (https://en.wikipedia.org/wiki/Coefficient_of_restitution)
+func (w *World) DoCollisions(restitution float64) {
+	if math.IsNaN(restitution) || restitution > 1 || restitution < 0 {
+		panic("Coefficient of restitution needs to be between 0 and 1, inclusive.")
+	}
 	for i := range w.Particles {
 		u := w.Particles[i]
 		// Each pair is unordered, so resolve it exactly once. Resolving both
@@ -27,8 +35,10 @@ func (w *World) DoCollisions(elastic bool) {
 
 			if u.IsTouching(v) && u.IsApproaching(v) {
 				logger.Debug("They should collide")
-				w.Particles[i], w.Particles[j] = u.ElasticCollision(v)
-			} else {logger.Debug("NO collision")}
+				w.Particles[i], w.Particles[j] = u.Collide(v, restitution)
+			} else {
+				logger.Debug("NO collision")
+			}
 		}
 	}
 }

@@ -105,3 +105,19 @@ func (u Vec2) Normalize() Vec2 {
 func (u Vec2) DistanceTo(other Vec2) float64 {
 	return math.Sqrt(math.Pow(u.X-other.X, 2) + math.Pow(u.Y-other.Y, 2))
 }
+
+func AddVectors(vectors ...Vec2) Vec2 {
+	var result Vec2
+	for _, u := range vectors {
+		result = result.Add(u)
+	}
+	return result
+}
+
+func SubtractVectors(vectors ...Vec2) Vec2 {
+	result := vectors[0]
+	for _, u := range vectors[1:] {
+		result = result.Sub(u)
+	}
+	return result
+}

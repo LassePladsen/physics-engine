@@ -44,6 +44,15 @@ func TestVec2Arithmetic(t *testing.T) {
 	}
 }
 
+func TestVectorHelpers(t *testing.T) {
+	if got := AddVectors(Vec2{1, 2}, Vec2{-3, 4}, Vec2{5, -6}); got != (Vec2{3, 0}) {
+		t.Errorf("AddVectors() = %v, want {3 0}", got)
+	}
+	if got := SubtractVectors(Vec2{1, 2}, Vec2{-3, 4}, Vec2{5, -6}); got != (Vec2{-1, 4}) {
+		t.Errorf("SubtractVectors() = %v, want {-1 4}", got)
+	}
+}
+
 func TestVec2DotAndLength(t *testing.T) {
 	dotTests := []struct {
 		name string
