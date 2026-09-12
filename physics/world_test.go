@@ -82,11 +82,10 @@ func TestWorldDoCollisionsPanicsForInvalidRestitution(t *testing.T) {
 }
 
 func TestWorldEnsureParticlesInBoundsStopsParticleOnBottomBoundary(t *testing.T) {
-	world := World{WindowBoundsRestitution: 0.1, Particles: []Particle2D{{
-		Position:     Vec2{X: 5, Y: 1},
-		Velocity:     Vec2{Y: 0},
-		Acceleration: Vec2{Y: -9.81},
-		Radius:       1,
+	world := World{Gravity: Vec2{Y: -9.81}, WindowBoundsRestitution: 0.1, Particles: []Particle2D{{
+		Position: Vec2{X: 5, Y: 1},
+		Velocity: Vec2{Y: 0},
+		Radius:   1,
 	}}}
 
 	for range 10 {
@@ -104,11 +103,10 @@ func TestWorldEnsureParticlesInBoundsStopsParticleOnBottomBoundary(t *testing.T)
 }
 
 func TestWorldEnsureParticlesInBoundsBouncesBeforeSettlingOnGround(t *testing.T) {
-	world := World{WindowBoundsRestitution: 0.1, Particles: []Particle2D{{
-		Position:     Vec2{X: 5, Y: 0.9},
-		Velocity:     Vec2{Y: -3},
-		Acceleration: Vec2{Y: -9.81},
-		Radius:       1,
+	world := World{Gravity: Vec2{Y: -9.81}, WindowBoundsRestitution: 0.1, Particles: []Particle2D{{
+		Position: Vec2{X: 5, Y: 0.9},
+		Velocity: Vec2{Y: -3},
+		Radius:   1,
 	}}}
 
 	world.Step(1.0 / 60.0)
@@ -124,5 +122,57 @@ func TestWorldEnsureParticlesInBoundsBouncesBeforeSettlingOnGround(t *testing.T)
 
 	if got := world.Particles[0].Velocity.Y; got != 0 {
 		t.Errorf("velocity after settling = %v, want 0", got)
+	}
+}
+
+func TestWorldEnsureParticlesInBoundsAppliesGroundFrictionWithoutReversing(t *testing.T) {
+	tests := []struct {
+		name     string
+		gravity  Vec2
+		position Vec2
+		velocity Vec2
+		want     Vec2
+	}{
+		{
+			name:     "slows velocity tangent to downward gravity",
+			gravity:  Vec2{Y: -10},
+			position: Vec2{X: 5, Y: 0.9},
+			velocity: Vec2{X: 3, Y: 2},
+			want:     Vec2{X: 0.5, Y: 0},
+		},
+		{
+			name:     "slows velocity tangent to horizontal gravity at a wall",
+			gravity:  Vec2{X: 10},
+			position: Vec2{X: 9.1, Y: 5},
+			velocity: Vec2{X: 2, Y: 3},
+			want:     Vec2{X: 0, Y: 0.5},
+		},
+		{
+			name:     "stops instead of reversing",
+			gravity:  Vec2{Y: -10},
+			position: Vec2{X: 5, Y: 0.9},
+			velocity: Vec2{X: 1},
+			want:     Vec2{},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			world := World{
+				Friction: 0.5,
+				Gravity:  tt.gravity,
+				Particles: []Particle2D{{
+					Position: tt.position,
+					Velocity: tt.velocity,
+					Radius:   1,
+				}},
+				lastDeltaTime: 0.5,
+			}
+
+			world.EnsureParticlesInBounds(10, 10)
+			if got := world.Particles[0].Velocity; !got.ApproxEquals(tt.want) {
+				t.Errorf("velocity = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }

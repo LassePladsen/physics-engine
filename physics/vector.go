@@ -18,43 +18,60 @@ func Vec2Zero() Vec2 {
 }
 
 // (1, 0)
-func Vec2Right() Vec2 {
+func UnitRight() Vec2 {
 	return Vec2{1, 0}
 }
 
 // (-1, 0)
-func Vec2Left() Vec2 {
+func UnitLeft() Vec2 {
 	return Vec2{-1, 0}
 }
 
 // (0, 1)
-func Vec2Up() Vec2 {
+func UnitUp() Vec2 {
 	return Vec2{0, 1}
 }
 
 // (0, -1)
-func Vec2Down() Vec2 {
+func UnitDown() Vec2 {
 	return Vec2{0, -1}
 }
 
 // Diagonal upwards to the right. (1/sqrt(2), 1/sqrt(2))
-func Vec2UpRight() Vec2 {
+func UnitUpRight() Vec2 {
 	return Vec2{1 / math.Sqrt2, 1 / math.Sqrt2}
 }
 
 // Diagonal upwards to the left. (-1/sqrt(2), 1/sqrt(2))
-func Vec2UpLeft() Vec2 {
+func UnitUpleft() Vec2 {
 	return Vec2{-1 / math.Sqrt2, 1 / math.Sqrt2}
 }
 
 // Diagonal downwards to the right. (1/sqrt(2), -1/sqrt(2))
-func Vec2DownRight() Vec2 {
+func UnitDownRight() Vec2 {
 	return Vec2{1 / math.Sqrt2, -1 / math.Sqrt2}
 }
 
 // Diagonal downwards to the left. (-1/sqrt(2), -1/sqrt(2))
-func Vec2DownLeft() Vec2 {
+func UnitDownLeft() Vec2 {
 	return Vec2{-1 / math.Sqrt2, -1 / math.Sqrt2}
+}
+
+// Unit vector
+func UnitFromDegrees(degrees float64) Vec2 {
+	return UnitFromRadians(DegreesToRadians(degrees))
+}
+
+func UnitFromRadians(radians float64) Vec2 {
+	return Vec2{math.Cos(radians), math.Sin(radians)}
+}
+
+func DegreesToRadians(degrees float64) float64 {
+	return degrees * math.Pi / 180
+}
+
+func RadiansToDegrees(radians float64) float64 {
+	return radians * 180 / math.Pi
 }
 
 // Checks if two vectors are the same within a given tolerance
@@ -83,7 +100,7 @@ func (u Vec2) Dot(other Vec2) float64 {
 	return u.X*other.X + u.Y*other.Y
 }
 
-// Scalar multiplication: 5v = {5v.X, 5v.Y}
+// Multiply vector by a scalar
 func (u Vec2) Mul(scalar float64) Vec2 {
 	return Vec2{scalar * u.X, scalar * u.Y}
 }
@@ -106,6 +123,20 @@ func (u Vec2) DistanceTo(other Vec2) float64 {
 	return math.Sqrt(math.Pow(u.X-other.X, 2) + math.Pow(u.Y-other.Y, 2))
 }
 
+// Gets scalar length of vectur u in the direction of another vector
+func (u Vec2) LengthInDirection(direction Vec2) float64 {
+	unit := direction.Normalize()
+	return u.Dot(unit)
+}
+
+// Sets vector u's scalar length in the direction of other vector
+// u' = u - (u*v)v where v is the unit vector of 'other'
+func (u Vec2) SetLengthInDirection(newLength float64, direction Vec2) Vec2 {
+	unit := direction.Normalize()
+	subtraction := unit.Mul(u.Dot(unit))
+	return u.Sub(subtraction)
+}
+
 func AddVectors(vectors ...Vec2) Vec2 {
 	var result Vec2
 	for _, u := range vectors {
@@ -120,4 +151,14 @@ func SubtractVectors(vectors ...Vec2) Vec2 {
 		result = result.Sub(u)
 	}
 	return result
+}
+
+// Alias of u.Dot(v)
+func Dot(u, v Vec2) float64 {
+	return u.Dot(v)
+}
+
+// Alias of u.Mul(scalar)
+func Mul(u Vec2, scalar float64) Vec2 {
+	return u.Mul(scalar)
 }

@@ -28,30 +28,6 @@ func TestParticle2DStep(t *testing.T) {
 	}
 }
 
-func TestParticle2DApplyForce(t *testing.T) {
-	tests := []struct {
-		name                string
-		mass                float64
-		initialAcceleration Vec2
-		forces              []Vec2
-		wantAcceleration    Vec2
-	}{
-		{"single force", 2, Vec2Zero(), []Vec2{{10, -4}}, Vec2{5, -2}},
-		{"accumulates forces", 4, Vec2{1, -1}, []Vec2{{8, 12}, {-4, 4}}, Vec2{2, 3}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			p := Particle2D{Mass: tt.mass, Acceleration: tt.initialAcceleration}
-			for _, force := range tt.forces {
-				p = p.ApplyForce(force)
-			}
-			if !p.Acceleration.ApproxEquals(tt.wantAcceleration) {
-				t.Fatalf("acceleration = %v, want %v", p.Acceleration, tt.wantAcceleration)
-			}
-		})
-	}
-}
-
 func TestParticle2DCollide(t *testing.T) {
 	tests := []struct {
 		name                    string

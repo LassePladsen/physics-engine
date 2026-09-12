@@ -6,21 +6,14 @@ type Particle2D struct {
 	Mass         float64 // kg
 	Position     Vec2    // m
 	Velocity     Vec2    // m/s
-	Acceleration Vec2    // m/s^2
 	Radius       float64 // m
 }
 
 // In-place advances the particle by deltaTime seconds.
-func (p *Particle2D) Step(deltaTime float64) {
+func (p *Particle2D) Step(acceleration Vec2, deltaTime float64) {
 	// Euler-Cromer
-	p.Velocity = p.Velocity.Add(p.Acceleration.Mul(deltaTime))
+	p.Velocity = p.Velocity.Add(acceleration.Mul(deltaTime))
 	p.Position = p.Position.Add(p.Velocity.Mul(deltaTime))
-}
-
-// Adds to particles acceleration using Newton's first law: acceleration = force / mass. Returns the new particle state
-func (p Particle2D) ApplyForce(force Vec2) Particle2D {
-	p.Acceleration = p.Acceleration.Add(force.Mul(1 / p.Mass))
-	return p
 }
 
 // Collide resolves a collision with the supplied coefficient of restitution and

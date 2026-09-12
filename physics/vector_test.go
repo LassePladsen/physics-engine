@@ -112,7 +112,7 @@ func TestVec2Normalize(t *testing.T) {
 		name    string
 		u, want Vec2
 	}{
-		{"zero", Vec2Zero(), Vec2Zero()}, {"right", Vec2{7, 0}, Vec2Right()}, {"up", Vec2{0, 100}, Vec2Up()}, {"diagonal", Vec2{-1, -1}, Vec2{-1 / math.Sqrt2, -1 / math.Sqrt2}},
+		{"zero", Vec2Zero(), Vec2Zero()}, {"right", Vec2{7, 0}, UnitRight()}, {"up", Vec2{0, 100}, UnitUp()}, {"diagonal", Vec2{-1, -1}, Vec2{-1 / math.Sqrt2, -1 / math.Sqrt2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
