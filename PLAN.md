@@ -2,10 +2,9 @@
 - [x] particle
 - [x] visulization
 - [x] Bounce in bounds
-- [ ] Global gravity: maybe add acceleration logic in particle?
-- [ ] gravity
-- [ ] array of particles
-- [ ] Particle-to-particle gravity?
+- [x] Global gravity: maybe add acceleration logic in particle?
+- [x] array of particles
+- [ ] particle-to-particle gravity
 
 Below is a plan made by chatGPT just in case I feel lost in terms of what to focus on next.
 
@@ -25,45 +24,45 @@ Build a simple 2D physics engine incrementally. Keep each step small, testable, 
 * [x] Position, velocity, mass
 * [x] Implement basic time integration: Update()
 * [x] Verify constant-velocity motion
-* [ ] Implement acceleration. Should this be stored in the Particle struct or be retrieved in Update()?
+* [x] Implement acceleration. Should this be stored in the Particle struct or be retrieved in Update()?
 
 ## 3. Visualization
 
 * [x] Create simple 2D visualization
 * [x] Render particles
 * [x] Run simulation loop
-* [ ] Visualize gravity and motion
+* [x] Visualize gravity and motion
 
 ## 4. World
 
-* [ ] Implement `World`
-* [ ] Store particles
-* [ ] Implement `World.Step(dt)`
-* [ ] Add configurable gravity
-* [ ] Verify free-fall motion
+* [x] Implement `World`
+* [x] Store particles
+* [x] Implement `World.Step(dt)`
+* [x] Add configurable gravity
+* [x] Verify free-fall motion
 
 
 ## 5. Boundaries
 
-* [ ] Add world/floor boundaries
-* [ ] Detect particle-boundary collision
-* [ ] Resolve penetration
-* [ ] Add restitution
-* [ ] Visualize bouncing particles
+* [x] Add world/floor boundaries
+* [x] Detect particle-boundary collision
+* [x] Resolve penetration
+* [x] Add restitution
+* [x] Visualize bouncing particles
 
 ## 6. Particle Collisions
 
-* [ ] Add particle radius
-* [ ] Detect particle-particle collisions
-* [ ] Resolve collisions
-* [ ] Preserve momentum
-* [ ] Add restitution
+* [x] Add particle radius
+* [x] Detect particle-particle collisions
+* [x] Resolve collisions
+* [x] Preserve momentum
+* [x] Add restitution
 
 ## 7. Forces
 
 * [ ] Add generic forces
 * [ ] Implement drag
-* [ ] Implement friction
+* [x] Implement friction
 * [ ] Implement impulses
 * [ ] Add springs
 
