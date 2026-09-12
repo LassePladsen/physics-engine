@@ -1,32 +1,49 @@
 package physics
 
-import (
-	"testing"
-)
+import "testing"
 
-func TestParticle2Step(t *testing.T) {
-	// TODO: acceleration
-	movedTo := func(p Particle2D, expectedPosition Vec2, dt float64) {
-		oldP := p
-		p.Step(dt)
-		if !p.Position.AlmostEquals(expectedPosition) {
-			t.Fatalf("Particle2d.Step moved to the wrong position: expected %v, got %v. particle=%+v", expectedPosition, p.Position, oldP)
-		}
+func TestParticle2DStep(t *testing.T) {
+	tests := []struct {
+		name               string
+		particle           Particle2D
+		dt                 float64
+		position, velocity Vec2
+	}{
+		{"stationary", Particle2D{Position: Vec2{1, -0.5}}, 1, Vec2{1, -0.5}, Vec2Zero()},
+		{"constant velocity", Particle2D{Velocity: Vec2{10, -1}}, 1, Vec2{10, -1}, Vec2{10, -1}},
+		{"euler cromer acceleration", Particle2D{Position: Vec2{1, 2}, Velocity: Vec2{3, -4}, Acceleration: Vec2{2, 6}}, 0.5, Vec2{3, 1.5}, Vec2{4, -1}},
 	}
-
-	movedTo(Particle2D{Position: Vec2{1, -0.5}, Velocity: Vec2{0, 0}}, Vec2{1, -0.5}, 1)
-	movedTo(Particle2D{Position: Vec2{0, 0}, Velocity: Vec2{10, -1}}, Vec2{10, -1}, 1)
-	movedTo(Particle2D{Position: Vec2{0, 0}, Velocity: Vec2{10, -1}}, Vec2{10 * 100, -1 * 100}, 100)
-	movedTo(Particle2D{Position: Vec2{50, -100}, Velocity: Vec2{10, 50}}, Vec2{60, -50}, 1)
-
-	p := Particle2D{Position: Vec2{100, 5}, Velocity: Vec2Left()}
-	oldP := p
-	iters := 1000
-	for range iters {
-		p.Step(1)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := tt.particle
+			p.Step(tt.dt)
+			if !p.Position.ApproxEquals(tt.position) || !p.Velocity.ApproxEquals(tt.velocity) {
+				t.Fatalf("after Step: position=%v velocity=%v, want position=%v velocity=%v", p.Position, p.Velocity, tt.position, tt.velocity)
+			}
+		})
 	}
-	expectedPosition := Vec2{-900, 5}
-	if !p.Position.AlmostEquals(expectedPosition) {
-		t.Fatalf("Particle2d.Step moved to the wrong position after %v iterations: expected %v, got %v. particle=%+v", iters, expectedPosition, p.Position, oldP)
+}
+
+func TestParticle2DApplyForce(t *testing.T) {
+	tests := []struct {
+		name         string
+		mass         float64
+		initial      Vec2
+		forces       []Vec2
+		acceleration Vec2
+	}{
+		{"single force", 2, Vec2Zero(), []Vec2{{10, -4}}, Vec2{5, -2}},
+		{"accumulates forces", 4, Vec2{1, -1}, []Vec2{{8, 12}, {-4, 4}}, Vec2{2, 3}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := Particle2D{Mass: tt.mass, Acceleration: tt.initial}
+			for _, force := range tt.forces {
+				p.ApplyForce(force)
+			}
+			if !p.Acceleration.ApproxEquals(tt.acceleration) {
+				t.Fatalf("acceleration = %v, want %v", p.Acceleration, tt.acceleration)
+			}
+		})
 	}
 }

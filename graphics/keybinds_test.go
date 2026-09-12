@@ -110,14 +110,14 @@ func TestRunKeybindsRunsJustPressedBindingsOnlyOnPressFrame(t *testing.T) {
 	}
 }
 
-func TestRunKeybindsInvokesCombinationWhenAnyKeyIsPressed(t *testing.T) {
+func TestRunKeybindsInvokesCombinationOnlyWhenAllKeysArePressed(t *testing.T) {
 	state := &simulatedKeyboard{held: map[ebiten.Key]bool{ebiten.KeyControl: true}}
 	useKeyboard(t, state)
 	called := 0
 	AddKeybind(func() { called++ }, false, ebiten.KeyC, ebiten.KeyControl)
 
 	RunKeybinds()
-	state.held = map[ebiten.Key]bool{}
+	state.held[ebiten.KeyC] = true
 	RunKeybinds()
 
 	if got := called; got != 1 {

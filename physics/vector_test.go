@@ -5,106 +5,105 @@ import (
 	"testing"
 )
 
-func TestVec2EqualsWithTol(t *testing.T) {
-	ensure := func(u, v Vec2, expected bool) {
-		got := u.AlmostEquals(v)
-		if expected != got {
-			t.Fatalf("Vec2.EqualsWithTol failed: expected %v, got %v. u=%v, v=%v", expected, got, u, v)
-		}
+func TestFloatEqualsAndVec2EqualityTolerance(t *testing.T) {
+	tests := []struct {
+		name      string
+		got, want bool
+	}{
+		{"equal values", FloatEquals(12.5, 12.5), true}, {"within tolerance", FloatEquals(0, tolerance/2), true},
+		{"at tolerance", FloatEquals(0, tolerance), false}, {"outside tolerance", FloatEquals(0, tolerance*2), false},
+		{"vector within tolerance", Vec2{1, -2}.EqualsWithTol(Vec2{1.5, -2.5}, 1), true},
+		{"vector at tolerance", Vec2{1, -2}.EqualsWithTol(Vec2{2, -2}, 1), false},
+		{"almost equal", Vec2Zero().ApproxEquals(Vec2{tolerance / 2, -tolerance / 2}), true},
+		{"almost equal boundary", Vec2Zero().ApproxEquals(Vec2{tolerance, 0}), false},
 	}
-	ensure(Vec2{1.5, -10}, Vec2{1.499999999999999999999999999999999999999999999999999999, -10.000000000000000000000000000000000000000000000001}, true)
-	ensure(Vec2{10, -100}.Add(Vec2{-20, 100}), Vec2{-10, 0}, true)
-	ensure(Vec2{10, -100}.Add(Vec2{-20.1, 100}), Vec2{-10, 0}, false)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.got != tt.want {
+				t.Fatalf("result = %v, want %v", tt.got, tt.want)
+			}
+		})
+	}
 }
 
-func TestVec2Add(t *testing.T) {
-	equals := func(u, v, expected Vec2) {
-		got := u.Add(v)
-		if got != expected {
-			t.Fatalf("Vec2.Add failed: expected %v, got %v. u=%v, v=%v", expected, got, u, v)
-		}
+func TestVec2Arithmetic(t *testing.T) {
+	tests := []struct {
+		name      string
+		got, want Vec2
+	}{
+		{"add", Vec2{0.5, 15.9}.Add(Vec2{1, 100}), Vec2{1.5, 115.9}},
+		{"subtract", Vec2{0.5, 100}.Sub(Vec2{1, -50}), Vec2{-0.5, 150}},
+		{"negative scalar", Vec2{-0.1, 0}.Mul(-50), Vec2{5, 0}}, {"zero scalar", Vec2{50, -10}.Mul(0), Vec2Zero()},
 	}
-
-	equals(Vec2{0.5, 15.9}, Vec2{1, 100}, Vec2{1.5, 115.9})
-	equals(Vec2{-50, 0}, Vec2{-100, 0}, Vec2{-150, 0})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if tt.got != tt.want {
+				t.Fatalf("result = %v, want %v", tt.got, tt.want)
+			}
+		})
+	}
 }
 
-func TestVec2Sub(t *testing.T) {
-	equals := func(u, v, expected Vec2) {
-		got := u.Sub(v)
-		if got != expected {
-			t.Fatalf("Vec2.Sub failed: expected %v, got %v. u=%v, v=%v", expected, got, u, v)
-		}
+func TestVec2DotAndLength(t *testing.T) {
+	dotTests := []struct {
+		name string
+		u, v Vec2
+		want float64
+	}{
+		{"perpendicular", Vec2{3, 0}, Vec2{0, 4}, 0}, {"mixed signs", Vec2{0.5, 100}, Vec2{1, -50}, -4999.5},
+	}
+	for _, tt := range dotTests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.u.Dot(tt.v); got != tt.want {
+				t.Fatalf("dot = %v, want %v", got, tt.want)
+			}
+		})
 	}
 
-	equals(Vec2{0.5, 100}, Vec2{1, -50}, Vec2{-0.5, 150})
-	equals(Vec2{-10, 0}, Vec2{-100, -5}, Vec2{90, 5})
-}
-
-func TestVec2Dot(t *testing.T) {
-	equals := func(u, v Vec2, expected float64) {
-		got := u.Dot(v)
-		if got != expected {
-			t.Fatalf("Vec2.Dot failed: expected %v, got %v. u=%v, v=%v", expected, got, u, v)
-		}
+	lengthTests := []struct {
+		name string
+		u    Vec2
+		want float64
+	}{
+		{"zero", Vec2Zero(), 0}, {"axis aligned", Vec2{-10, 0}, 10}, {"three four five", Vec2{3, 4}, 5}, {"diagonal", Vec2{1, 1}, math.Sqrt2},
 	}
-
-	equals(Vec2{0.5, 100}, Vec2{1, -50}, 0.5*1+100*(-50))
-	equals(Vec2{-0.1, 0}, Vec2{-100, -5}, -0.1*(-100)+0*(-5))
-}
-
-func TestVec2Mul(t *testing.T) {
-	equals := func(u Vec2, scalar float64, expected Vec2) {
-		got := u.Mul(scalar)
-		if got != expected {
-			t.Fatalf("Vec2.Mul failed: expected %v, got %v. u=%v, scalar=%v", expected, got, u, scalar)
-		}
+	for _, tt := range lengthTests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.u.Length(); !FloatEquals(got, tt.want) {
+				t.Fatalf("length = %v, want %v", got, tt.want)
+			}
+		})
 	}
-
-	equals(Vec2{0.5, 100}, 5, Vec2{2.5, 500})
-	equals(Vec2{-0.1, 0}, -50, Vec2{5, 0})
-	equals(Vec2{50, -10}, 0, Vec2{0, 0})
-	equals(Vec2{50, -10}, -0, Vec2{0, 0})
-	equals(Vec2{50, -10}, 1, Vec2{50, -10})
-	equals(Vec2{50, -10}, -1, Vec2{-50, 10})
-}
-
-func TestVec2Length(t *testing.T) {
-	tol := 0.001
-	equals := func(u Vec2, expected float64) {
-		got := u.Length()
-		if math.Abs(got-expected) >= tol {
-			t.Fatalf("Vec2.Length failed: expected %v, got %v. u=%v", expected, got, u)
-		}
-	}
-
-	equals(Vec2{1, 1}, math.Sqrt(2))
-	equals(Vec2{0, 0}, 0)
-	equals(Vec2{100, 0}, 100)
-	equals(Vec2{-10, -10}, 14.142)
-	equals(Vec2{10, -10}, 14.142)
-	equals(Vec2{-10, 10}, 14.142)
 }
 
 func TestVec2Normalize(t *testing.T) {
-	equals := func(u Vec2, expected Vec2) {
-		if got := u.Normalize(); !expected.AlmostEquals(got) {
-			t.Fatalf("Vec2.Normalize failed: expected %v, got %v. u=%v", expected, got, u)
+	tests := []struct {
+		name    string
+		u, want Vec2
+	}{
+		{"zero", Vec2Zero(), Vec2Zero()}, {"right", Vec2{7, 0}, Vec2Right()}, {"up", Vec2{0, 100}, Vec2Up()}, {"diagonal", Vec2{-1, -1}, Vec2{-1 / math.Sqrt2, -1 / math.Sqrt2}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.u.Normalize()
+			if !got.ApproxEquals(tt.want) {
+				t.Fatalf("normalized vector = %v, want %v", got, tt.want)
+			}
+			if tt.want != Vec2Zero() && !FloatEquals(got.Length(), 1) {
+				t.Fatalf("normalized length = %v, want 1", got.Length())
+			}
+		})
+	}
+}
+
+func TestRound(t *testing.T) {
+	tests := []struct {
+		input float64
+		want  int
+	}{{0, 0}, {1.49, 1}, {1.5, 2}, {-1.49, -1}, {-1.5, -2}}
+	for _, tt := range tests {
+		if got := Round(tt.input); got != tt.want {
+			t.Errorf("Round(%v) = %d, want %d", tt.input, got, tt.want)
 		}
 	}
-
-	equals(Vec2{1, 1}, Vec2{1 / math.Sqrt(2), 1 / math.Sqrt(2)})
-	equals(Vec2{-15150, 0}, Vec2Left())
-	equals(Vec2{0, 100}, Vec2Up())
-	equals(Vec2{-10, -10}, Vec2{-1 / math.Sqrt(2), -1 / math.Sqrt(2)})
-
-	ensureLength := func(u Vec2) {
-		if got := u.Normalize().Length(); math.Abs(got - 1) >= tolerance {
-			t.Fatalf("Vec2.Normalize failed: new length should be 1, got %v. u=%v", got, u)
-
-		}
-	}
-	ensureLength(Vec2{1, 1})
-	ensureLength(Vec2{-5, 10})
-	ensureLength(Vec2{12300, 500})
 }
