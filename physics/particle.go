@@ -8,8 +8,7 @@ type Particle2D struct {
 	Radius       float64 // m
 }
 
-// In-place moves the particle one step in the future, dt is the time delta change. low value is recommended for accurate results, e.g 0.001 or even lower.
-// For graphics rendering at x fps it should be: 1/x
+// In-place advances the particle by deltaTime seconds.
 func (p *Particle2D) Step(deltaTime float64) {
 	// Euler-Cromer
 	p.Velocity = p.Velocity.Add(p.Acceleration.Mul(deltaTime))
