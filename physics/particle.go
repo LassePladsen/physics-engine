@@ -46,8 +46,6 @@ func (p Particle2D) Collide(other Particle2D, restitution float64) (Particle2D, 
 
 // Returns whether the particles' circumferences touch or overlap.
 func (p Particle2D) IsTouching(other Particle2D) bool {
-	// TODO: inelastic collision
-	// TODO: make elastic vs inelastic one parameter 0 <= e <= 1.
 	return p.CircumferenceDistanceTo(other) < tolerance
 }
 
