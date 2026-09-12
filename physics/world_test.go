@@ -19,8 +19,8 @@ func TestWorldStepUpdatesParticlesInPlace(t *testing.T) {
 	}
 }
 
-func TestWorldStepResolvesHeadOnCollisionUsingDefaultRestitution(t *testing.T) {
-	world := World{Particles: []Particle2D{
+func TestWorldStepResolvesHeadOnCollision(t *testing.T) {
+	world := World{ParticleRestitution: 0.5, Particles: []Particle2D{
 		{Mass: 1, Position: Vec2{X: 0, Y: 0}, Velocity: Vec2{X: 5, Y: 9.3195}, Radius: 0.2},
 		{Mass: 1, Position: Vec2{X: 0.4, Y: 0}, Velocity: Vec2{X: -5, Y: 9.3195}, Radius: 0.2},
 	}}
@@ -82,7 +82,7 @@ func TestWorldDoCollisionsPanicsForInvalidRestitution(t *testing.T) {
 }
 
 func TestWorldEnsureParticlesInBoundsReflectsVelocity(t *testing.T) {
-	world := World{Particles: []Particle2D{{
+	world := World{WindowBoundsRestitution: 1, Particles: []Particle2D{{
 		Position: Vec2{X: 10.2, Y: -0.1},
 		Velocity: Vec2{X: 2, Y: -3},
 		Radius:   1,
@@ -96,5 +96,27 @@ func TestWorldEnsureParticlesInBoundsReflectsVelocity(t *testing.T) {
 	}
 	if particle.Position != (Vec2{X: 9, Y: 1}) {
 		t.Errorf("position = %v, want {9 1}", particle.Position)
+	}
+}
+
+func TestWorldEnsureParticlesInBoundsStopsParticleOnBottomBoundary(t *testing.T) {
+	world := World{WindowBoundsRestitution: 0.1, Particles: []Particle2D{{
+		Position:     Vec2{X: 5, Y: 9},
+		Velocity:     Vec2{Y: 0},
+		Acceleration: Vec2{Y: 9.81},
+		Radius:       1,
+	}}}
+
+	for range 10 {
+		world.Step(1.0 / 60.0)
+		world.EnsureParticlesInBounds(10, 10)
+	}
+
+	particle := world.Particles[0]
+	if particle.Velocity != (Vec2{Y: 0}) {
+		t.Errorf("velocity = %v, want {0 0}", particle.Velocity)
+	}
+	if particle.Position != (Vec2{X: 5, Y: 9}) {
+		t.Errorf("position = %v, want {5 9}", particle.Position)
 	}
 }

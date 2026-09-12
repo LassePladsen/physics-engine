@@ -45,7 +45,8 @@ func (w *World) DoCollisions(restitution float64) {
 }
 
 // EnsureParticlesInBounds keeps every particle inside a world with the given
-// dimensions, reflecting its velocity when it reaches an edge.
+// dimensions. Side walls and the ceiling reflect velocity; the bottom boundary
+// is a resting surface, so it removes downward velocity.
 func (w *World) EnsureParticlesInBounds(width, height float64) {
 	for i := range w.Particles {
 		ensureParticleInBounds(&w.Particles[i], width, height, w.WindowBoundsRestitution)
@@ -58,14 +59,20 @@ func ensureParticleInBounds(particle *Particle2D, width, height float64, restitu
 	if particle.Position.X+particle.Radius > width ||
 		particle.Position.X-particle.Radius < 0 {
 		particle.Velocity.X *= -restitution
-		particle.Position.X = min(max(particle.Radius, particle.Position.X+particle.Radius), width-particle.Radius)
+		particle.Position.X = min(max(particle.Radius, particle.Position.X), width-particle.Radius)
 		changed = true
 	}
-	if particle.Position.Y+particle.Radius > height ||
-		particle.Position.Y-particle.Radius < 0 {
+	if particle.Position.Y-particle.Radius < 0 {
 		particle.Velocity.Y *= -restitution
-		particle.Position.Y = min(max(particle.Radius, particle.Position.Y+particle.Radius), height-particle.Radius)
+		particle.Position.Y = particle.Radius
 		changed = true
 	}
-	if changed {logger.Debugf("Particle was changed to %+v", particle)}
+	if particle.Position.Y+particle.Radius > height {
+		particle.Velocity.Y = 0
+		particle.Position.Y = height - particle.Radius
+		changed = true
+	}
+	if changed {
+		logger.Debugf("Particle was changed to %+v", particle)
+	}
 }
