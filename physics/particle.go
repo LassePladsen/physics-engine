@@ -30,6 +30,9 @@ func (p Particle2D) ApplyForce(force Vec2) Particle2D {
 // Conservation of kinetic energy: 1/2*m_1*v_1i^2 + 1/2*m_2*v_2i^2 = 1/2*m_1*v_1f^2 + 1/2*m_2*v_2f^2
 func (p Particle2D) ElasticCollision(other Particle2D) (Particle2D, Particle2D) {
 	sumMasses := p.Mass + other.Mass
+	if sumMasses == 0 {
+		panic("Particle2D.ElasticCollision: sum of particle masses are zero, the formulas will divide by zero.")
+	}
 	newP := p
 	newP.Velocity = p.Velocity.Mul((p.Mass - other.Mass) / sumMasses).
 		Add(other.Velocity.Mul(2 * other.Mass / sumMasses))

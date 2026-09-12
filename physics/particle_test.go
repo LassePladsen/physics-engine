@@ -1,6 +1,9 @@
 package physics
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestParticle2DStep(t *testing.T) {
 	tests := []struct {
@@ -89,4 +92,22 @@ func TestParticle2DElasticCollision(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestParticle2DElasticCollisionPanicsWhenMassesSumToZero(t *testing.T) {
+	p := Particle2D{Mass: 1}
+	other := Particle2D{Mass: -1}
+
+	defer func() {
+		recovered := recover()
+		if recovered == nil {
+			t.Fatal("ElasticCollision did not panic")
+		}
+		message, ok := recovered.(string)
+		if !ok || !strings.Contains(message, "sum of particle masses are zero") {
+			t.Fatalf("panic = %v, want zero total mass error", recovered)
+		}
+	}()
+
+	p.ElasticCollision(other)
 }
