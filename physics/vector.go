@@ -64,7 +64,7 @@ func (u Vec2) EqualsWithTol(other Vec2, tolerance float64) bool {
 }
 
 // Checks if two vectors are the same within a small floating point error tolerance.
-func (u Vec2) AlmostEquals(other Vec2) bool {
+func (u Vec2) ApproxEquals(other Vec2) bool {
 	return u.EqualsWithTol(other, tolerance)
 }
 
