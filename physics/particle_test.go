@@ -28,21 +28,64 @@ func TestParticle2DApplyForce(t *testing.T) {
 	tests := []struct {
 		name         string
 		mass         float64
-		initial      Vec2
+		initialAcceleration      Vec2
 		forces       []Vec2
-		acceleration Vec2
+		wantAcceleration Vec2
 	}{
 		{"single force", 2, Vec2Zero(), []Vec2{{10, -4}}, Vec2{5, -2}},
 		{"accumulates forces", 4, Vec2{1, -1}, []Vec2{{8, 12}, {-4, 4}}, Vec2{2, 3}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := Particle2D{Mass: tt.mass, Acceleration: tt.initial}
+			p := Particle2D{Mass: tt.mass, Acceleration: tt.initialAcceleration}
 			for _, force := range tt.forces {
-				p.ApplyForce(force)
+				p = p.ApplyForce(force)
 			}
-			if !p.Acceleration.ApproxEquals(tt.acceleration) {
-				t.Fatalf("acceleration = %v, want %v", p.Acceleration, tt.acceleration)
+			if !p.Acceleration.ApproxEquals(tt.wantAcceleration) {
+				t.Fatalf("acceleration = %v, want %v", p.Acceleration, tt.wantAcceleration)
+			}
+		})
+	}
+}
+
+func TestParticle2DElasticCollision(t *testing.T) {
+	tests := []struct {
+		name                    string
+		particle, other         Particle2D
+		wantParticle, wantOther Vec2
+	}{
+		{
+			name:         "equal masses exchange velocities",
+			particle:     Particle2D{Mass: 2, Velocity: Vec2{3, -1}},
+			other:        Particle2D{Mass: 2, Velocity: Vec2{-4, 5}},
+			wantParticle: Vec2{-4, 5},
+			wantOther:    Vec2{3, -1},
+		},
+		{
+			name:         "unequal masses with stationary other particle",
+			particle:     Particle2D{Mass: 1, Velocity: Vec2{6, -3}},
+			other:        Particle2D{Mass: 2},
+			wantParticle: Vec2{-2, 1},
+			wantOther:    Vec2{4, -2},
+		},
+		{
+			name:         "same velocity remains unchanged",
+			particle:     Particle2D{Mass: 1, Velocity: Vec2{2, -7}},
+			other:        Particle2D{Mass: 3, Velocity: Vec2{2, -7}},
+			wantParticle: Vec2{2, -7},
+			wantOther:    Vec2{2, -7},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotParticle, gotOther := tt.particle.ElasticCollision(tt.other)
+
+			if !gotParticle.Velocity.ApproxEquals(tt.wantParticle) {
+				t.Errorf("first particle velocity = %v, want %v", gotParticle.Velocity, tt.wantParticle)
+			}
+			if !gotOther.Velocity.ApproxEquals(tt.wantOther) {
+				t.Errorf("second particle velocity = %v, want %v", gotOther.Velocity, tt.wantOther)
 			}
 		})
 	}

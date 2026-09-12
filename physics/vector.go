@@ -57,7 +57,6 @@ func Vec2DownLeft() Vec2 {
 	return Vec2{-1 / math.Sqrt2, -1 / math.Sqrt2}
 }
 
-
 // Checks if two vectors are the same within a given tolerance
 func (u Vec2) EqualsWithTol(other Vec2, tolerance float64) bool {
 	return math.Abs(u.X-other.X) < tolerance && math.Abs(u.Y-other.Y) < tolerance
@@ -96,7 +95,7 @@ func (u Vec2) Length() float64 {
 
 func (u Vec2) Normalize() Vec2 {
 	// Check division by zero
-	if u.Length() < tolerance {
+	if u.Length() == 0 {
 		return Vec2Zero()
 	}
 	return u.Mul(1 / u.Length())

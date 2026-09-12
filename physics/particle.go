@@ -16,24 +16,27 @@ func (p *Particle2D) Step(deltaTime float64) {
 	p.Position = p.Position.Add(p.Velocity.Mul(deltaTime))
 }
 
-// Adds to particles acceleration using Newton's first law: acceleration = force / mass
-func (p *Particle2D) ApplyForce(force Vec2) {
-	p.Acceleration.Add(force.Mul(p.Mass))
+// Adds to particles acceleration using Newton's first law: acceleration = force / mass. Returns the new particle state
+func (p Particle2D) ApplyForce(force Vec2) Particle2D {
+	p.Acceleration = p.Acceleration.Add(force.Mul(1/p.Mass))
+	return p
 }
 
-// Performs an elastic collision i.e no kinetic energy/momentum loss, returns the two new particle states (p, other).
+// Performs an elastic collision i.e no kinetic energy or momentum loss, returns the two new particle states (p, other).
+// Panics if the sum of their masses are zero, which should't never be the case.
 //
-// m_1*v_1i + m_2*v_2i = m_1*v_1f + m_2*v_2f
+// Conversation of momentum: m_1*v_1i + m_2*v_2i = m_1*v_1f + m_2*v_2f
 //
-// 1/2*m_1*v_1i^2 + 1/2*m_2*v_2i^2 = 1/2*m_1*v_1f^2 + 1/2*m_2*v_2f^2
+// Conservation of kinetic energy: 1/2*m_1*v_1i^2 + 1/2*m_2*v_2i^2 = 1/2*m_1*v_1f^2 + 1/2*m_2*v_2f^2
 func (p Particle2D) ElasticCollision(other Particle2D) (Particle2D, Particle2D) {
+	sumMasses := p.Mass + other.Mass
 	newP := p
-	newP.Velocity = p.Velocity.Mul((p.Mass - other.Mass) / (p.Mass + other.Mass)).
-		Add(other.Velocity.Mul(2 * other.Mass / (p.Mass + other.Mass)))
+	newP.Velocity = p.Velocity.Mul((p.Mass - other.Mass) / sumMasses).
+		Add(other.Velocity.Mul(2 * other.Mass / sumMasses))
 
 	newOther := other
-	newOther.Velocity = p.Velocity.Mul(2 * p.Mass / (p.Mass + other.Mass)).
-		Add(other.Velocity.Mul((other.Mass - p.Mass) / (p.Mass + other.Mass)))
+	newOther.Velocity = p.Velocity.Mul(2 * p.Mass / sumMasses).
+		Add(other.Velocity.Mul((other.Mass - p.Mass) / sumMasses))
 
 	return newP, newOther
 }
