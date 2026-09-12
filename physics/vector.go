@@ -37,9 +37,14 @@ func Vec2Down() Vec2 {
 	return Vec2{0, -1}
 }
 
-// Checks if two vectors are the same within a small floating point error tolerance.
-func (u Vec2) EqualsWithTol(other Vec2) bool {
+// Checks if two vectors are the same within a given tolerance
+func (u Vec2) EqualsWithTol(other Vec2, tolerance float64) bool {
 	return math.Abs(u.X-other.X) < tolerance && math.Abs(u.Y-other.Y) < tolerance
+}
+
+// Checks if two vectors are the same within a small floating point error tolerance.
+func (u Vec2) AlmostEquals(other Vec2) bool {
+	return u.EqualsWithTol(other, tolerance)
 }
 
 func (u Vec2) Add(other Vec2) Vec2 {

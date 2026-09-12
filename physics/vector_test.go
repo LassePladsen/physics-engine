@@ -7,7 +7,7 @@ import (
 
 func TestVec2EqualsWithTol(t *testing.T) {
 	ensure := func(u, v Vec2, expected bool) {
-		got := u.EqualsWithTol(v)
+		got := u.AlmostEquals(v)
 		if expected != got {
 			t.Fatalf("Vec2.EqualsWithTol failed: expected %v, got %v. u=%v, v=%v", expected, got, u, v)
 		}
@@ -89,7 +89,7 @@ func TestVec2Length(t *testing.T) {
 func TestVec2Normalize(t *testing.T) {
 	equals := func(u Vec2, expected Vec2) {
 		got := u.Normalize()
-		if !expected.EqualsWithTol(got) {
+		if !expected.AlmostEquals(got) {
 			t.Fatalf("Vec2.Normalize failed: expected %v, got %v. u=%v", expected, got, u)
 		}
 	}
