@@ -3,10 +3,10 @@ package physics
 import "math"
 
 type Particle2D struct {
-	Mass         float64 // kg
-	Position     Vec2    // m
-	Velocity     Vec2    // m/s
-	Radius       float64 // m
+	Mass     float64 // kg
+	Position Vec2    // m
+	Velocity Vec2    // m/s
+	Radius   float64 // m
 }
 
 // In-place advances the particle by deltaTime seconds.
@@ -32,12 +32,13 @@ func (p Particle2D) Collide(other Particle2D, restitution float64) (Particle2D, 
 	if sumMasses == 0 {
 		panic("sum of particle masses are zero, the formulas will divide by zero.")
 	}
+	momentum := AddVectors(p.Velocity.Mul(p.Mass), other.Velocity.Mul(other.Mass))
 	newP := p
-	newP.Velocity = AddVectors(p.Velocity.Mul(p.Mass), other.Velocity.Mul(other.Mass), other.Velocity.Sub(p.Velocity).Mul(restitution*other.Mass))
+	newP.Velocity = AddVectors(momentum, other.Velocity.Sub(p.Velocity).Mul(restitution*other.Mass))
 	newP.Velocity = newP.Velocity.Mul(1 / sumMasses)
 
 	newOther := other
-	newOther.Velocity = AddVectors(p.Velocity.Mul(p.Mass), other.Velocity.Mul(other.Mass), p.Velocity.Sub(other.Velocity).Mul(restitution*p.Mass))
+	newOther.Velocity = AddVectors(momentum, p.Velocity.Sub(other.Velocity).Mul(restitution*p.Mass))
 	newOther.Velocity = newOther.Velocity.Mul(1 / sumMasses)
 
 	return newP, newOther

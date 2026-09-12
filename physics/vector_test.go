@@ -14,8 +14,8 @@ func TestFloatEqualsAndVec2EqualityTolerance(t *testing.T) {
 		{"at tolerance", FloatEquals(0, tolerance), false}, {"outside tolerance", FloatEquals(0, tolerance*2), false},
 		{"vector within tolerance", Vec2{1, -2}.EqualsWithTol(Vec2{1.5, -2.5}, 1), true},
 		{"vector at tolerance", Vec2{1, -2}.EqualsWithTol(Vec2{2, -2}, 1), false},
-		{"almost equal", Vec2Zero().ApproxEquals(Vec2{tolerance / 2, -tolerance / 2}), true},
-		{"almost equal boundary", Vec2Zero().ApproxEquals(Vec2{tolerance, 0}), false},
+		{"almost equal", Zero().ApproxEquals(Vec2{tolerance / 2, -tolerance / 2}), true},
+		{"almost equal boundary", Zero().ApproxEquals(Vec2{tolerance, 0}), false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -33,7 +33,7 @@ func TestVec2Arithmetic(t *testing.T) {
 	}{
 		{"add", Vec2{0.5, 15.9}.Add(Vec2{1, 100}), Vec2{1.5, 115.9}},
 		{"subtract", Vec2{0.5, 100}.Sub(Vec2{1, -50}), Vec2{-0.5, 150}},
-		{"negative scalar", Vec2{-0.1, 0}.Mul(-50), Vec2{5, 0}}, {"zero scalar", Vec2{50, -10}.Mul(0), Vec2Zero()},
+		{"negative scalar", Vec2{-0.1, 0}.Mul(-50), Vec2{5, 0}}, {"zero scalar", Vec2{50, -10}.Mul(0), Zero()},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -74,7 +74,7 @@ func TestVec2DotAndLength(t *testing.T) {
 		u    Vec2
 		want float64
 	}{
-		{"zero", Vec2Zero(), 0}, {"axis aligned", Vec2{-10, 0}, 10}, {"three four five", Vec2{3, 4}, 5}, {"diagonal", Vec2{1, 1}, math.Sqrt2},
+		{"zero", Zero(), 0}, {"axis aligned", Vec2{-10, 0}, 10}, {"three four five", Vec2{3, 4}, 5}, {"diagonal", Vec2{1, 1}, math.Sqrt2},
 	}
 	for _, tt := range lengthTests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -112,7 +112,7 @@ func TestVec2Normalize(t *testing.T) {
 		name    string
 		u, want Vec2
 	}{
-		{"zero", Vec2Zero(), Vec2Zero()}, {"right", Vec2{7, 0}, UnitRight()}, {"up", Vec2{0, 100}, UnitUp()}, {"diagonal", Vec2{-1, -1}, Vec2{-1 / math.Sqrt2, -1 / math.Sqrt2}},
+		{"zero", Zero(), Zero()}, {"right", Vec2{7, 0}, UnitRight()}, {"up", Vec2{0, 100}, UnitUp()}, {"diagonal", Vec2{-1, -1}, Vec2{-1 / math.Sqrt2, -1 / math.Sqrt2}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -120,7 +120,7 @@ func TestVec2Normalize(t *testing.T) {
 			if !got.ApproxEquals(tt.want) {
 				t.Fatalf("normalized vector = %v, want %v", got, tt.want)
 			}
-			if tt.want != Vec2Zero() && !FloatEquals(got.Length(), 1) {
+			if tt.want != Zero() && !FloatEquals(got.Length(), 1) {
 				t.Fatalf("normalized length = %v, want 1", got.Length())
 			}
 		})

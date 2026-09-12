@@ -12,8 +12,8 @@ type Vec2 struct {
 	X, Y float64
 }
 
-// (0, 0)
-func Vec2Zero() Vec2 {
+// Zero vector (0, 0)
+func Zero() Vec2 {
 	return Vec2{0, 0}
 }
 
@@ -112,10 +112,11 @@ func (u Vec2) Length() float64 {
 
 func (u Vec2) Normalize() Vec2 {
 	// Check division by zero
-	if u.Length() == 0 {
-		return Vec2Zero()
+	length := u.Length()
+	if length == 0 {
+		return Zero()
 	}
-	return u.Mul(1 / u.Length())
+	return u.Mul(1 / length)
 }
 
 // Euclidean distance to another vector

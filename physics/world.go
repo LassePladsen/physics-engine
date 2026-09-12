@@ -126,7 +126,6 @@ func (w *World) applyBoundaryFriction(particle *Particle2D, normal Vec2) {
 	// Friction removes only the velocity parallel to the boundary. It is capped
 	// at the tangential speed, so it cannot reverse the particle's direction.
 	tangentialVelocity := particle.Velocity.Sub(normal.Mul(particle.Velocity.Dot(normal)))
-	frictionDeltaV := w.Friction * -normalGravity * w.lastDeltaTime
-	frictionDeltaV = min(frictionDeltaV, tangentialVelocity.Length())
+	frictionDeltaV := min(w.Friction*-normalGravity*w.lastDeltaTime, tangentialVelocity.Length())
 	particle.Velocity = particle.Velocity.Sub(tangentialVelocity.Normalize().Mul(frictionDeltaV))
 }

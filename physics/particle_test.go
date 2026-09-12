@@ -14,8 +14,8 @@ func TestParticle2DStep(t *testing.T) {
 		dt                 float64
 		position, velocity Vec2
 	}{
-		{"stationary", Particle2D{Position: Vec2{1, -0.5}}, Vec2Zero(), 1, Vec2{1, -0.5}, Vec2Zero()},
-		{"constant velocity", Particle2D{Velocity: Vec2{10, -1}}, Vec2Zero(), 1, Vec2{10, -1}, Vec2{10, -1}},
+		{"stationary", Particle2D{Position: Vec2{1, -0.5}}, Zero(), 1, Vec2{1, -0.5}, Zero()},
+		{"constant velocity", Particle2D{Velocity: Vec2{10, -1}}, Zero(), 1, Vec2{10, -1}, Vec2{10, -1}},
 		{"euler cromer acceleration", Particle2D{Position: Vec2{1, 2}, Velocity: Vec2{3, -4}}, Vec2{2, 6}, 0.5, Vec2{3, 1.5}, Vec2{4, -1}},
 	}
 	for _, tt := range tests {
