@@ -11,6 +11,7 @@ type World struct {
 	Particles               []Particle2D
 	ParticleRestitution     float64 // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
 	WindowBoundsRestitution float64 // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
+	Friction                float64
 	lastDeltaTime           float64
 }
 
@@ -52,36 +53,46 @@ func (w *World) DoCollisions(restitution float64) {
 // use positive Y upwards.
 func (w *World) EnsureParticlesInBounds(width, height float64) {
 	for i := range w.Particles {
-		ensureParticleInBounds(&w.Particles[i], width, height, w.WindowBoundsRestitution, w.lastDeltaTime)
+		w.ensureParticleInBounds(&w.Particles[i], width, height)
 	}
 }
 
-func ensureParticleInBounds(particle *Particle2D, width, height, restitution, deltaTime float64) {
+func (w *World) ensureParticleInBounds(particle *Particle2D, width, height float64) {
 	logger.Debugf("Ensuring inbounds (%v, %v) for %+v", width, height, particle)
 	changed := false
+
+	// Left/right bounce
 	if particle.Position.X+particle.Radius > width ||
 		particle.Position.X-particle.Radius < 0 {
-		particle.Velocity.X *= -restitution
+		particle.Velocity.X *= -w.WindowBoundsRestitution
 		particle.Position.X = min(max(particle.Radius, particle.Position.X), width-particle.Radius)
+
+		// Apply friction by dampening x speed when on the ground. F = mu * g
+		particle.ApplyForce(particle.Velocity.Normalize().Mul(w.Friction*particle.Acceleration.Y))
 		changed = true
 	}
+
+	// Top bounce
+	if particle.Position.Y+particle.Radius > height {
+		particle.Velocity.Y *= -w.WindowBoundsRestitution
+		particle.Position.Y = height - particle.Radius
+		changed = true
+	}
+
+	// Groundbounce
 	if particle.Position.Y-particle.Radius < 0 {
-		particle.Velocity.Y *= -restitution
+		particle.Velocity.Y *= -w.WindowBoundsRestitution
 		// A rebound that is smaller than gravity adds in one tick cannot lift the
 		// particle off the ground, so treat it as resting instead of micro-bouncing.
 		// This stops endless bouncing
 		if particle.Acceleration.Y < 0 &&
-			particle.Velocity.Y <= -particle.Acceleration.Y*deltaTime {
+			particle.Velocity.Y <= -particle.Acceleration.Y*w.lastDeltaTime {
 			particle.Velocity.Y = 0
 		}
 		particle.Position.Y = particle.Radius
 		changed = true
 	}
-	if particle.Position.Y+particle.Radius > height {
-		particle.Velocity.Y *= -restitution
-		particle.Position.Y = height - particle.Radius
-		changed = true
-	}
+
 	if changed {
 		logger.Debugf("Particle was changed to %+v", particle)
 	}

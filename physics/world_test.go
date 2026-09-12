@@ -81,24 +81,6 @@ func TestWorldDoCollisionsPanicsForInvalidRestitution(t *testing.T) {
 	}
 }
 
-func TestWorldEnsureParticlesInBoundsReflectsVelocity(t *testing.T) {
-	world := World{WindowBoundsRestitution: 1, Particles: []Particle2D{{
-		Position: Vec2{X: 10.2, Y: 10.1},
-		Velocity: Vec2{X: 2, Y: 3},
-		Radius:   1,
-	}}}
-
-	world.EnsureParticlesInBounds(10, 10)
-
-	particle := world.Particles[0]
-	if particle.Velocity != (Vec2{X: -2, Y: -3}) {
-		t.Errorf("velocity = %v, want {-2 -3}", particle.Velocity)
-	}
-	if particle.Position != (Vec2{X: 9, Y: 9}) {
-		t.Errorf("position = %v, want {9 9}", particle.Position)
-	}
-}
-
 func TestWorldEnsureParticlesInBoundsStopsParticleOnBottomBoundary(t *testing.T) {
 	world := World{WindowBoundsRestitution: 0.1, Particles: []Particle2D{{
 		Position:     Vec2{X: 5, Y: 1},

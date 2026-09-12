@@ -18,8 +18,8 @@ var Paused = false
 
 // The main state for the rendering game engine
 type Game struct {
-	World physics.World
-	Tps   float64 // rendering ticks per second
+	World     physics.World
+	DeltaTime float64
 }
 
 func (g *Game) DrawAll(screen *ebiten.Image) {
@@ -28,7 +28,7 @@ func (g *Game) DrawAll(screen *ebiten.Image) {
 		// Physics uses positive Y upwards; screen coordinates use positive Y downwards.
 		y := MetersToPixels(PixelsToMeters(screenHeight) - particle.Position.Y)
 		x := MetersToPixels(particle.Position.X)
-		drawCircle(screen, x, y, MetersToPixels(particle.Radius), color.White)
+		DrawCircle(screen, x, y, MetersToPixels(particle.Radius), color.White)
 	}
 }
 
@@ -39,10 +39,14 @@ func (g *Game) Update() error {
 		return nil
 	}
 
-	g.World.Step(1 / g.Tps)
+	g.Step()
+	return nil
+}
+
+func (g *Game) Step() {
+	g.World.Step(g.DeltaTime)
 	screenWidth, screenHeight := ebiten.ScreenSize()
 	g.World.EnsureParticlesInBounds(PixelsToMeters(screenWidth), PixelsToMeters(screenHeight))
-	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
@@ -54,7 +58,7 @@ func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeigh
 }
 
 // Unfilled circle at (x, y)
-func drawCircle(screen *ebiten.Image, x, y int, radius int, clr color.Color) {
+func DrawCircle(screen *ebiten.Image, x, y int, radius int, clr color.Color) {
 	// Draw pixels completely around the x,y center point in a 360 degree = 2pi radians
 	for degrees := range 361 {
 		radians := float64(degrees) * math.Pi / 180
@@ -64,7 +68,7 @@ func drawCircle(screen *ebiten.Image, x, y int, radius int, clr color.Color) {
 	}
 }
 
-func getMonitorCenter() (int, int) {
+func GetMonitorCenter() (int, int) {
 	w, h := ebiten.Monitor().Size()
 	return w / 2, h / 2
 }

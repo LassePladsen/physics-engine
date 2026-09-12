@@ -10,10 +10,12 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-const TicksPerSecond = 60.0
+const ticksPerSecond = 60.0
+const deltaTime = 1 / ticksPerSecond
 const gravityAcceleration = 9.81 // m/s^2
 const particleRestitution = 0.2
 const windowBoundsRestitution = 0.55
+const friction = 0.8
 
 func main() {
 	logger.Init()
@@ -28,16 +30,7 @@ func main() {
 	ebiten.SetWindowSize(windowWidth, windowHeight)
 	ebiten.SetWindowPosition(windowX, windowY)
 	ebiten.SetWindowTitle("Physics Engine")
-	ebiten.SetTPS(TicksPerSecond)
-
-	// Keybinds
-	graphics.AddKeybind(graphics.TogglePause, true, ebiten.KeyP)
-	exit := func() {
-		os.Exit(0)
-	}
-	graphics.AddKeybind(exit, false, ebiten.KeyEscape)
-	graphics.AddKeybind(exit, false, ebiten.KeyQ)
-	graphics.AddKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
+	ebiten.SetTPS(ticksPerSecond)
 
 	// Particles
 	radius := 0.2 // m
@@ -55,7 +48,31 @@ func main() {
 	p2.Radius *= 1.8
 
 	// Init the simulation
-	game := graphics.Game{Tps: TicksPerSecond, World: physics.World{WindowBoundsRestitution: windowBoundsRestitution, ParticleRestitution: particleRestitution, Particles: []physics.Particle2D{p1, p2}}}
+	game := graphics.Game{
+		DeltaTime: 1 / ticksPerSecond,
+		World: physics.World{
+			Friction:                friction,
+			WindowBoundsRestitution: windowBoundsRestitution,
+			ParticleRestitution:     particleRestitution,
+			Particles:               []physics.Particle2D{p1, p2},
+		},
+	}
+
+	/// KEYBINDS
+	graphics.AddKeybind(graphics.TogglePause, true, ebiten.KeyP) // pause
+
+	// exit
+	exit := func() {
+		os.Exit(0)
+	}
+	graphics.AddKeybind(exit, false, ebiten.KeyEscape)
+	graphics.AddKeybind(exit, false, ebiten.KeyQ)
+	graphics.AddKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
+
+	// Step once
+	graphics.AddKeybind(func() { game.Step() }, true, ebiten.KeyS)
+	/// END KEYBINDS
+
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {
 			logger.Error(err.Error())
