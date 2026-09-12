@@ -140,7 +140,7 @@ func TestParticle2DShouldCollide(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.particle.ShouldCollide(tt.other); got != tt.want {
+			if got := tt.particle.IsTouching(tt.other); got != tt.want {
 				t.Errorf("ShouldCollide() = %t, want %t", got, tt.want)
 			}
 		})

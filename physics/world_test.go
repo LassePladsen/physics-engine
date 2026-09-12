@@ -16,6 +16,22 @@ func TestWorldStepUpdatesParticlesInPlace(t *testing.T) {
 	}
 }
 
+func TestWorldStepResolvesHeadOnCollisionOnce(t *testing.T) {
+	world := World{Particles: []Particle2D{
+		{Mass: 1, Position: Vec2{X: 0, Y: 0}, Velocity: Vec2{X: 5, Y: 9.3195}, Radius: 0.2},
+		{Mass: 1, Position: Vec2{X: 0.4, Y: 0}, Velocity: Vec2{X: -5, Y: 9.3195}, Radius: 0.2},
+	}}
+
+	world.Step(0)
+
+	if got := world.Particles[0].Velocity; !got.ApproxEquals(Vec2{X: -5, Y: 9.3195}) {
+		t.Errorf("first particle velocity = %v, want {-5 9.3195}", got)
+	}
+	if got := world.Particles[1].Velocity; !got.ApproxEquals(Vec2{X: 5, Y: 9.3195}) {
+		t.Errorf("second particle velocity = %v, want {5 9.3195}", got)
+	}
+}
+
 func TestWorldEnsureParticlesInBoundsReflectsVelocity(t *testing.T) {
 	world := World{Particles: []Particle2D{{
 		Position: Vec2{X: 10.2, Y: -0.1},
