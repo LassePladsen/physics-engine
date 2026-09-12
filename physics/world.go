@@ -59,32 +59,55 @@ func (w *World) EnsureParticlesInBounds(width, height float64) {
 }
 
 func (w *World) ensureParticleInBounds(particle *Particle2D, width, height float64) {
-	// Left/right bounce
-	if particle.Position.X+particle.Radius > width ||
-		particle.Position.X-particle.Radius < 0 {
+	// Right bounce
+	if particle.Position.X+particle.Radius > width {
 		particle.Velocity.X *= -w.WindowBoundsRestitution
-		particle.Position.X = min(max(particle.Radius, particle.Position.X), width-particle.Radius)
+		particle.Position.X = width - particle.Radius
+		w.applyBoundaryFriction(particle, UnitLeft())
+	}
+
+	// Left bounce
+	if particle.Position.X-particle.Radius < 0 {
+		particle.Velocity.X *= -w.WindowBoundsRestitution
+		particle.Position.X = particle.Radius
+		w.applyBoundaryFriction(particle, UnitRight())
 	}
 
 	// Top bounce
 	if particle.Position.Y+particle.Radius > height {
 		particle.Velocity.Y *= -w.WindowBoundsRestitution
 		particle.Position.Y = height - particle.Radius //
+		w.applyBoundaryFriction(particle, UnitDown())
 	}
 
-	// Groundbounce
+	// Ground bounce
 	if particle.Position.Y-particle.Radius < 0 {
 		particle.Velocity.Y *= -w.WindowBoundsRestitution
 		particle.Position.Y = particle.Radius
+		w.applyBoundaryFriction(particle, UnitUp())
 	}
-
-	// Apply friction by dampening x speed when on the ground. F = mu * g
-	// CODEX HERE
 
 	// A rebound that is smaller than gravity adds in one tick cannot lift the
 	// particle off the wall/ground, so treat it as resting instead of endless micro-bouncing.
 	v_g := particle.Velocity.LengthInDirection(w.Gravity)
-	if v_g <= -w.Gravity.Length()*w.lastDeltaTime {
+	if v_g >= -w.Gravity.Length()*w.lastDeltaTime {
 		particle.Velocity = particle.Velocity.SetLengthInDirection(0, w.Gravity)
 	}
+}
+
+// applyBoundaryFriction applies kinetic friction for a boundary with the given
+// inward normal. A boundary supports a particle only when gravity pushes it
+// into that boundary; its normal force is the gravity component along normal.
+func (w *World) applyBoundaryFriction(particle *Particle2D, normal Vec2) {
+	normalGravity := w.Gravity.Dot(normal)
+	if normalGravity >= 0 {
+		return
+	}
+
+	// Friction removes only the velocity parallel to the boundary. It is capped
+	// at the tangential speed, so it cannot reverse the particle's direction.
+	tangentialVelocity := particle.Velocity.Sub(normal.Mul(particle.Velocity.Dot(normal)))
+	frictionDeltaV := w.Friction * -normalGravity * w.lastDeltaTime
+	frictionDeltaV = min(frictionDeltaV, tangentialVelocity.Length())
+	particle.Velocity = particle.Velocity.Sub(tangentialVelocity.Normalize().Mul(frictionDeltaV))
 }

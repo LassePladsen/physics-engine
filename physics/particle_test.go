@@ -10,17 +10,18 @@ func TestParticle2DStep(t *testing.T) {
 	tests := []struct {
 		name               string
 		particle           Particle2D
+		acceleration       Vec2
 		dt                 float64
 		position, velocity Vec2
 	}{
-		{"stationary", Particle2D{Position: Vec2{1, -0.5}}, 1, Vec2{1, -0.5}, Vec2Zero()},
-		{"constant velocity", Particle2D{Velocity: Vec2{10, -1}}, 1, Vec2{10, -1}, Vec2{10, -1}},
-		{"euler cromer acceleration", Particle2D{Position: Vec2{1, 2}, Velocity: Vec2{3, -4}, Acceleration: Vec2{2, 6}}, 0.5, Vec2{3, 1.5}, Vec2{4, -1}},
+		{"stationary", Particle2D{Position: Vec2{1, -0.5}}, Vec2Zero(), 1, Vec2{1, -0.5}, Vec2Zero()},
+		{"constant velocity", Particle2D{Velocity: Vec2{10, -1}}, Vec2Zero(), 1, Vec2{10, -1}, Vec2{10, -1}},
+		{"euler cromer acceleration", Particle2D{Position: Vec2{1, 2}, Velocity: Vec2{3, -4}}, Vec2{2, 6}, 0.5, Vec2{3, 1.5}, Vec2{4, -1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			p := tt.particle
-			p.Step(tt.dt)
+			p.Step(tt.acceleration, tt.dt)
 			if !p.Position.ApproxEquals(tt.position) || !p.Velocity.ApproxEquals(tt.velocity) {
 				t.Fatalf("after Step: position=%v velocity=%v, want position=%v velocity=%v", p.Position, p.Velocity, tt.position, tt.velocity)
 			}
@@ -56,17 +57,17 @@ func TestParticle2DCollide(t *testing.T) {
 }
 
 func TestParticle2DCollidePreservesOtherStateAndInputs(t *testing.T) {
-	p := Particle2D{Mass: 1, Position: Vec2{1, 2}, Velocity: Vec2{6, -3}, Acceleration: Vec2{4, 5}, Radius: 7}
-	other := Particle2D{Mass: 2, Position: Vec2{8, 9}, Velocity: Vec2{-1, 2}, Acceleration: Vec2{-6, 3}, Radius: 4}
+	p := Particle2D{Mass: 1, Position: Vec2{1, 2}, Velocity: Vec2{6, -3}, Radius: 7}
+	other := Particle2D{Mass: 2, Position: Vec2{8, 9}, Velocity: Vec2{-1, 2}, Radius: 4}
 
 	gotP, gotOther := p.Collide(other, 1)
 	if p.Velocity != (Vec2{6, -3}) || other.Velocity != (Vec2{-1, 2}) {
 		t.Fatal("Collide mutated one of its inputs")
 	}
-	if gotP.Mass != p.Mass || gotP.Position != p.Position || gotP.Acceleration != p.Acceleration || gotP.Radius != p.Radius {
+	if gotP.Mass != p.Mass || gotP.Position != p.Position || gotP.Radius != p.Radius {
 		t.Errorf("first particle state besides velocity changed: %+v", gotP)
 	}
-	if gotOther.Mass != other.Mass || gotOther.Position != other.Position || gotOther.Acceleration != other.Acceleration || gotOther.Radius != other.Radius {
+	if gotOther.Mass != other.Mass || gotOther.Position != other.Position || gotOther.Radius != other.Radius {
 		t.Errorf("second particle state besides velocity changed: %+v", gotOther)
 	}
 }
