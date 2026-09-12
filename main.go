@@ -12,7 +12,8 @@ import (
 
 const TicksPerSecond = 60.0
 const gravityAcceleration = 9.81 // m/s^2
-const restitution = 0.2
+const particleRestitution = 0.2
+const windowBoundsRestitution = 0.1
 
 func main() {
 	logger.Init()
@@ -41,19 +42,20 @@ func main() {
 	// Particles
 	radius := 0.2 // m
 	p1 := physics.Particle2D{
-		Mass: 1,
-		Position:     physics.Vec2{X: radius, Y: graphics.PixelsToMeters(monitorHeight / 2)},
+		Mass:         1,
+		Radius:       radius,
+		Position:     physics.Vec2{X: radius * 1.5, Y: graphics.PixelsToMeters(monitorHeight / 2)},
 		Velocity:     physics.Vec2{X: 5, Y: 0},
 		Acceleration: physics.Vec2Down().Mul(gravityAcceleration), // Constant acc as of now. NB: downwards is positive y
-		Radius:       radius,
 	}
 	p2 := p1
-	p2.Position.X = float64(windowWidth) - p1.Position.X
+	p2.Position.X = graphics.PixelsToMeters(windowWidth) - p1.Position.X
 	p2.Velocity.X = -p1.Velocity.X
-	p2.Mass = 2*p1.Mass
+	p2.Mass *= 1.8
+	p2.Radius *= 1.8
 
 	// Init the simulation
-	game := graphics.Game{Tps: TicksPerSecond, World: physics.World{Restitution: restitution, Particles: []physics.Particle2D{p1, p2}}}
+	game := graphics.Game{Tps: TicksPerSecond, World: physics.World{WindowBoundsRestitution: windowBoundsRestitution, ParticleRestitution: particleRestitution, Particles: []physics.Particle2D{p1, p2}}}
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {
 			logger.Error(err.Error())

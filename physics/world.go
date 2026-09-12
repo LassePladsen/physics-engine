@@ -8,8 +8,9 @@ import (
 
 // World contains the particles that make up a simulation.
 type World struct {
-	Particles []Particle2D
-	Restitution float64  // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
+	Particles               []Particle2D
+	ParticleRestitution     float64 // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
+	WindowBoundsRestitution float64 // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
 }
 
 // Advances every particle in the world by deltaTime seconds.
@@ -17,7 +18,7 @@ func (w *World) Step(deltaTime float64) {
 	for i := range w.Particles {
 		w.Particles[i].Step(deltaTime)
 	}
-	w.DoCollisions(w.Restitution) // change to inelastic here
+	w.DoCollisions(w.ParticleRestitution) // change to inelastic here
 }
 
 // Checks and runs collisions for each relevant particle. Panics if not: 0 <= resitution <= 1 (https://en.wikipedia.org/wiki/Coefficient_of_restitution)
@@ -47,19 +48,24 @@ func (w *World) DoCollisions(restitution float64) {
 // dimensions, reflecting its velocity when it reaches an edge.
 func (w *World) EnsureParticlesInBounds(width, height float64) {
 	for i := range w.Particles {
-		ensureParticleInBounds(&w.Particles[i], width, height)
+		ensureParticleInBounds(&w.Particles[i], width, height, w.WindowBoundsRestitution)
 	}
 }
 
-func ensureParticleInBounds(particle *Particle2D, width, height float64) {
+func ensureParticleInBounds(particle *Particle2D, width, height float64, restitution float64) {
+	logger.Debugf("Ensuring inbounds (%v, %v) for %+v", width, height, particle)
+	changed := false
 	if particle.Position.X+particle.Radius > width ||
 		particle.Position.X-particle.Radius < 0 {
-		particle.Velocity.X *= -1
+		particle.Velocity.X *= -restitution
 		particle.Position.X = min(max(particle.Radius, particle.Position.X+particle.Radius), width-particle.Radius)
+		changed = true
 	}
 	if particle.Position.Y+particle.Radius > height ||
 		particle.Position.Y-particle.Radius < 0 {
-		particle.Velocity.Y *= -1
+		particle.Velocity.Y *= -restitution
 		particle.Position.Y = min(max(particle.Radius, particle.Position.Y+particle.Radius), height-particle.Radius)
+		changed = true
 	}
+	if changed {logger.Debugf("Particle was changed to %+v", particle)}
 }
