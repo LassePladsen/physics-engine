@@ -20,3 +20,20 @@ func (p *Particle2D) Step(deltaTime float64) {
 func (p *Particle2D) ApplyForce(force Vec2) {
 	p.Acceleration.Add(force.Mul(p.Mass))
 }
+
+// Performs an elastic collision i.e no kinetic energy/momentum loss, returns the two new particle states (p, other).
+//
+// m_1*v_1i + m_2*v_2i = m_1*v_1f + m_2*v_2f
+//
+// 1/2*m_1*v_1i^2 + 1/2*m_2*v_2i^2 = 1/2*m_1*v_1f^2 + 1/2*m_2*v_2f^2
+func (p Particle2D) ElasticCollision(other Particle2D) (Particle2D, Particle2D) {
+	newP := p
+	newP.Velocity = p.Velocity.Mul((p.Mass - other.Mass) / (p.Mass + other.Mass)).
+		Add(other.Velocity.Mul(2 * other.Mass / (p.Mass + other.Mass)))
+
+	newOther := other
+	newOther.Velocity = p.Velocity.Mul(2 * p.Mass / (p.Mass + other.Mass)).
+		Add(other.Velocity.Mul((other.Mass - p.Mass) / (p.Mass + other.Mass)))
+
+	return newP, newOther
+}
