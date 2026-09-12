@@ -19,25 +19,47 @@ var DeltaTime = 0.01 // seconds
 
 // The main state for the rendering game engine
 type Game struct {
-	Particle physics.Particle2D
+	Particles []physics.Particle2D
 }
 
-// Keeps particles in-bounds by bouncing it back, also truncate it back to current window sise
-func (g *Game) ensureInBounds() {
+// In-place ensures particle is in-bounds by bouncing it back if outside, also keep within the current window size
+func ensureInBounds(particle *physics.Particle2D) {
 	screenWidth, screenHeight := ebiten.ScreenSize()
 	width := PixelsToMeters(screenWidth)
 	height := PixelsToMeters(screenHeight)
 	logger.Debugf("ensureInBounds: maxX, maxY: (%v, %v)", width, height)
-	logger.Debugf("ensureInBounds: Particle: %+v", g.Particle)
-	if g.Particle.Position.X+g.Particle.Radius > width ||
-		g.Particle.Position.X-g.Particle.Radius < 0 {
-		g.Particle.Velocity.X *= -1
-		g.Particle.Position.X = min(max(g.Particle.Radius, g.Particle.Position.X+g.Particle.Radius), width-g.Particle.Radius)
+	logger.Debugf("ensureInBounds: Particle: %+v", particle)
+	if particle.Position.X+particle.Radius > width ||
+		particle.Position.X-particle.Radius < 0 {
+		particle.Velocity.X *= -1
+		particle.Position.X = min(max(particle.Radius, particle.Position.X+particle.Radius), width-particle.Radius)
 	}
-	if g.Particle.Position.Y+g.Particle.Radius > height ||
-		g.Particle.Position.Y-g.Particle.Radius < 0 {
-		g.Particle.Velocity.Y *= -1
-		g.Particle.Position.Y = min(max(g.Particle.Radius, g.Particle.Position.Y+g.Particle.Radius), height-g.Particle.Radius)
+	if particle.Position.Y+particle.Radius > height ||
+		particle.Position.Y-particle.Radius < 0 {
+		particle.Velocity.Y *= -1
+		particle.Position.Y = min(max(particle.Radius, particle.Position.Y+particle.Radius), height-particle.Radius)
+	}
+}
+
+func (g *Game) EnsureAllInBounds() {
+	for i := range g.Particles {
+		ensureInBounds(&g.Particles[i])
+	}
+}
+
+func (g *Game) DrawAll(screen *ebiten.Image) {
+	_, screenHeight := ebiten.ScreenSize()
+	for _, particle := range g.Particles {
+		// NB: positive y is down, so reverse the y by subtracting from height
+		y := MetersToPixels(PixelsToMeters(screenHeight) - particle.Position.Y)
+		x := MetersToPixels(particle.Position.X)
+		drawCircle(screen, x, y, MetersToPixels(particle.Radius), color.White)
+	}
+}
+
+func (g *Game) StepAll() {
+	for i := range g.Particles {
+		g.Particles[i].Step(DeltaTime)
 	}
 }
 
@@ -48,17 +70,15 @@ func (g *Game) Update() error {
 		return nil
 	}
 
-	g.Particle.Step(DeltaTime)
-	g.ensureInBounds()
+	for i := range g.Particles {
+		g.Particles[i].Step(DeltaTime)
+		ensureInBounds(&g.Particles[i])
+	}
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
-	_, screenHeight := ebiten.ScreenSize()
-	// NB: positive y is down, so reverse the y by subtracting from height
-	y := MetersToPixels(PixelsToMeters(screenHeight) - g.Particle.Position.Y)
-	x := MetersToPixels(g.Particle.Position.X)
-	drawCircle(screen, x, y, MetersToPixels(g.Particle.Radius), color.White)
+	g.DrawAll(screen)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {

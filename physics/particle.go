@@ -8,7 +8,7 @@ type Particle2D struct {
 	Radius       float64 // m
 }
 
-// Moves the particle one step in the future, dt is the time delta change. low value is recommended for accurate results, e.g 0.001 or even lower.
+// In-place moves the particle one step in the future, dt is the time delta change. low value is recommended for accurate results, e.g 0.001 or even lower.
 // For graphics rendering at x fps it should be: 1/x
 func (p *Particle2D) Step(deltaTime float64) {
 	// Euler-Cromer
@@ -43,3 +43,4 @@ func (p Particle2D) ElasticCollision(other Particle2D) (Particle2D, Particle2D) 
 
 	return newP, newOther
 }
+

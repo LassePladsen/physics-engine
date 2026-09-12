@@ -33,7 +33,6 @@ func main() {
 
 	// Keybinds
 	graphics.AddKeybind(graphics.TogglePause, true, ebiten.KeyP)
-
 	exit := func() {
 		os.Exit(0)
 	}
@@ -41,12 +40,12 @@ func main() {
 	graphics.AddKeybind(exit, false, ebiten.KeyQ)
 	graphics.AddKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
 
-	game := graphics.Game{Particle: physics.Particle2D{
+	game := graphics.Game{Particles: []physics.Particle2D{{
 		Position:     physics.Vec2{X: radius, Y: graphics.PixelsToMeters(mh / 2)},
-		Velocity:     physics.Vec2{X: 1, Y: 0},
+		Velocity:     physics.Vec2{X: 5, Y: 0},
 		Acceleration: physics.Vec2Down().Mul(gravityAcceleration), // Constant acc as of now. NB: downwards is positive y
 		Radius:       radius,
-	}}
+	}}}
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {
 			logger.Error(err.Error())
