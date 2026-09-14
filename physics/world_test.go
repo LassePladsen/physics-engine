@@ -5,6 +5,51 @@ import (
 	"testing"
 )
 
+func TestGenerateRandomCreatesParticlesWithinConfiguredRanges(t *testing.T) {
+	config := WorldGenConfig{
+		NumParticles:  100,
+		MinMass:       2,
+		MaxMass:       4,
+		MinPositions:  Vec2{X: -10, Y: 20},
+		MaxPositions:  Vec2{X: 30, Y: 60},
+		MinVelocities: Vec2{X: -5, Y: -3},
+		MaxVelocities: Vec2{X: 7, Y: 9},
+		MinRadius:     1,
+		MaxRadius:     3,
+	}
+
+	world := GenerateRandom(config)
+	if got := len(world.Particles); got != config.NumParticles {
+		t.Fatalf("number of particles = %d, want %d", got, config.NumParticles)
+	}
+
+	for i, particle := range world.Particles {
+		if particle.Mass < config.MinMass || particle.Mass > config.MaxMass {
+			t.Errorf("particle %d mass = %v, want within [%v, %v]", i, particle.Mass, config.MinMass, config.MaxMass)
+		}
+		if particle.Radius < config.MinRadius || particle.Radius > config.MaxRadius {
+			t.Errorf("particle %d radius = %v, want within [%v, %v]", i, particle.Radius, config.MinRadius, config.MaxRadius)
+		}
+		if particle.Velocity.X < config.MinVelocities.X || particle.Velocity.X > config.MaxVelocities.X ||
+			particle.Velocity.Y < config.MinVelocities.Y || particle.Velocity.Y > config.MaxVelocities.Y {
+			t.Errorf("particle %d velocity = %v, want within %v to %v", i, particle.Velocity, config.MinVelocities, config.MaxVelocities)
+		}
+
+		minX, maxX := config.MinPositions.X+particle.Radius*1.1, config.MaxPositions.X-particle.Radius*1.1
+		minY, maxY := config.MinPositions.Y+particle.Radius*1.1, config.MaxPositions.Y-particle.Radius*1.1
+		if particle.Position.X < minX || particle.Position.X > maxX || particle.Position.Y < minY || particle.Position.Y > maxY {
+			t.Errorf("particle %d position = %v, want within {%v %v} to {%v %v}", i, particle.Position, minX, minY, maxX, maxY)
+		}
+	}
+}
+
+func TestGenerateRandomWithZeroParticles(t *testing.T) {
+	world := GenerateRandom(WorldGenConfig{})
+	if len(world.Particles) != 0 {
+		t.Errorf("number of particles = %d, want 0", len(world.Particles))
+	}
+}
+
 func TestWorldStepUpdatesParticlesInPlace(t *testing.T) {
 	world := World{Particles: []Particle2D{{
 		Position: Vec2{X: 1, Y: 2},

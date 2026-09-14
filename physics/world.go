@@ -8,6 +8,7 @@ import (
 
 // World contains the particles that make up a simulation.
 type World struct {
+	DisableCollisions bool
 	Particles               []Particle2D
 	ParticleRestitution     float64 // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
 	WindowBoundsRestitution float64 // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
@@ -22,7 +23,9 @@ func (w *World) Step(deltaTime float64) {
 	for i := range w.Particles {
 		w.Particles[i].Step(w.Gravity, deltaTime)
 	}
-	w.DoCollisions(w.ParticleRestitution) // change to inelastic here
+	if !w.DisableCollisions {
+		w.DoCollisions(w.ParticleRestitution) // change to inelastic here
+	}
 }
 
 // Checks and runs collisions for each relevant particle. Panics if not: 0 <= resitution <= 1 (https://en.wikipedia.org/wiki/Coefficient_of_restitution)
@@ -128,4 +131,36 @@ func (w *World) applyBoundaryFriction(particle *Particle2D, normal Vec2) {
 	tangentialVelocity := particle.Velocity.Sub(normal.Mul(particle.Velocity.Dot(normal)))
 	frictionDeltaV := min(w.Friction*-normalGravity*w.lastDeltaTime, tangentialVelocity.Length())
 	particle.Velocity = particle.Velocity.Sub(tangentialVelocity.Normalize().Mul(frictionDeltaV))
+}
+
+// Parameters for random world generation
+type WorldGenConfig struct {
+	NumParticles  int
+	MinMass       float64 // kg
+	MaxMass       float64 // kg
+	MinPositions  Vec2    // m
+	MaxPositions  Vec2    // m
+	MinVelocities Vec2    // m / s
+	MaxVelocities Vec2    // m / s
+	MinRadius     float64 // m
+	MaxRadius     float64 // m
+}
+
+// Randomizes a world with given number of particles
+func GenerateRandom(config WorldGenConfig) World {
+	var world World
+	for range config.NumParticles {
+		particle := Particle2D{
+			Position: Vec2{RandomFloat(config.MinPositions.X, config.MaxPositions.X), RandomFloat(config.MinPositions.X, config.MaxPositions.Y)},
+			Velocity: Vec2{RandomFloat(config.MinVelocities.X, config.MaxVelocities.X), RandomFloat(config.MinVelocities.Y, config.MaxVelocities.Y)},
+			Radius:   RandomFloat(config.MinRadius, config.MaxRadius),
+			Mass:     RandomFloat(config.MinMass, config.MaxMass),
+		}
+		// Check boundaries
+		particle.Position.X = Clamp(particle.Position.X, config.MinPositions.X + particle.Radius*1.1, config.MaxPositions.X-particle.Radius*1.1)
+		particle.Position.Y = Clamp(particle.Position.Y, config.MinPositions.Y + particle.Radius*1.1, config.MaxPositions.Y-particle.Radius*1.1)
+		world.Particles = append(world.Particles, particle)
+
+	}
+	return world
 }

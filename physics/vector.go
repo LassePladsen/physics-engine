@@ -162,3 +162,8 @@ func Dot(u, v Vec2) float64 {
 func Mul(u Vec2, scalar float64) Vec2 {
 	return u.Mul(scalar)
 }
+
+// Return new vector with equal X and Y: (val, val)
+func NewDiagonal(val float64) Vec2 {
+	return Vec2{val, val}
+}
