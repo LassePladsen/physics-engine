@@ -5,6 +5,7 @@
 - [x] Global gravity: maybe add acceleration logic in particle?
 - [x] array of particles
 - [ ] particle-to-particle gravity
+- [ ] simulate a star system
 
 Below is a plan made by chatGPT just in case I feel lost in terms of what to focus on next.
 
