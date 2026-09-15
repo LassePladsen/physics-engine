@@ -98,26 +98,32 @@ func TestParticle2DCollidePanicsForInvalidInputs(t *testing.T) {
 	}
 }
 
-func TestParticle2DShouldCollide(t *testing.T) {
+func TestParticle2DOverlaps(t *testing.T) {
 	tests := []struct {
 		name            string
 		particle, other Particle2D
 		want            bool
 	}{
 		{
-			name:     "overlapping particles",
+			name:     "partially overlapping circles",
 			particle: Particle2D{Position: Vec2{0, 0}, Radius: 2},
 			other:    Particle2D{Position: Vec2{3, 0}, Radius: 2},
 			want:     true,
 		},
 		{
-			name:     "particles touching at their circumferences",
-			particle: Particle2D{Position: Vec2{0, 0}, Radius: 2},
-			other:    Particle2D{Position: Vec2{5, 0}, Radius: 3},
+			name:     "one circle completely inside the other",
+			particle: Particle2D{Position: Vec2{0, 0}, Radius: 5},
+			other:    Particle2D{Position: Vec2{1, 0}, Radius: 1},
 			want:     true,
 		},
 		{
-			name:     "particles separated beyond their radii",
+			name:     "concentric circles",
+			particle: Particle2D{Position: Vec2{2, -3}, Radius: 4},
+			other:    Particle2D{Position: Vec2{2, -3}, Radius: 1},
+			want:     true,
+		},
+		{
+			name:     "circles are separated",
 			particle: Particle2D{Position: Vec2{0, 0}, Radius: 2},
 			other:    Particle2D{Position: Vec2{5.1, 0}, Radius: 3},
 			want:     false,
@@ -126,8 +132,8 @@ func TestParticle2DShouldCollide(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.particle.IsTouching(tt.other); got != tt.want {
-				t.Errorf("ShouldCollide() = %t, want %t", got, tt.want)
+			if got := tt.particle.Overlaps(tt.other); got != tt.want {
+				t.Errorf("Overlaps() = %t, want %t", got, tt.want)
 			}
 		})
 	}

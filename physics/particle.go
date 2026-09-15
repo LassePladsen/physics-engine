@@ -1,6 +1,10 @@
 package physics
 
-import "math"
+import (
+	"math"
+
+	"github.com/LassePladsen/physics-engine/logger"
+)
 
 type Particle2D struct {
 	Mass     float64 // kg
@@ -17,7 +21,7 @@ func (p *Particle2D) Step(acceleration Vec2, deltaTime float64) {
 }
 
 // Collide resolves a collision with the supplied coefficient of restitution and
-// returns the two new particle states (p, other). A restitution of 1 is a
+// returns the two new repelled particle states (p, other). A restitution of 1 is a
 // perfectly elastic collision; 0 is perfectly inelastic.
 // Panics if the sum of the masses is zero or restitution is outside [0, 1].
 //
@@ -32,21 +36,38 @@ func (p Particle2D) Collide(other Particle2D, restitution float64) (Particle2D, 
 	if sumMasses == 0 {
 		panic("sum of particle masses are zero, the formulas will divide by zero.")
 	}
-	momentum := AddVectors(p.Velocity.Mul(p.Mass), other.Velocity.Mul(other.Mass))
 	newP := p
-	newP.Velocity = AddVectors(momentum, other.Velocity.Sub(p.Velocity).Mul(restitution*other.Mass))
-	newP.Velocity = newP.Velocity.Mul(1 / sumMasses)
-
 	newOther := other
-	newOther.Velocity = AddVectors(momentum, p.Velocity.Sub(other.Velocity).Mul(restitution*p.Mass))
-	newOther.Velocity = newOther.Velocity.Mul(1 / sumMasses)
+
+	// We should do velocity full collision only if this is truly a collision, which is when 
+	// the velocities are poining towards each other
+	if p.IsApproaching(other) {
+		momentum := AddVectors(p.Velocity.Mul(p.Mass), other.Velocity.Mul(other.Mass))
+		newP.Velocity = AddVectors(momentum, other.Velocity.Sub(p.Velocity).Mul(restitution*other.Mass))
+		newP.Velocity = newP.Velocity.Mul(1 / sumMasses)
+
+		newOther.Velocity = AddVectors(momentum, p.Velocity.Sub(other.Velocity).Mul(restitution*p.Mass))
+		newOther.Velocity = newOther.Velocity.Mul(1 / sumMasses)
+	}
+
+	// Make sure to teleport them outside of each others circumference to avoid new collision next frame,
+	// and stop them getting stuck inside each other
+	// https://photos.google.com/u/1/documents/ChdTa2plcm1iaWxkZXIgb2cgLW9wcHRhayIJEgcKBbIBAhgOKJ7y7auKNA%3D%3D/photo/AF1QipMhAxu-BfabOGc9wwcYw4Ta3g8hkk1vuAX3w8XK
+	newPDistanceToOthersCircumerfence := newP.Radius + newOther.Radius - newP.DistanceTo(newOther)
+	logger.Debugf("newPDistanceToOtherCircumerfence: %v", newPDistanceToOthersCircumerfence)
+
+	// This is the vector newP needs to move for it to leave the circumerfence of other
+	// But, lets move them both instead of only moving newP, move the greater mass less by using its ratio of the sum of masses
+	newPBounceVector := newP.Velocity.Normalize().Mul(newPDistanceToOthersCircumerfence * newP.Mass / sumMasses)
+	logger.Debugf("newPBounceVector: %v", newPBounceVector)
+	otherBounceVector := other.Velocity.Normalize().Mul(newPDistanceToOthersCircumerfence * other.Mass / sumMasses)
+	logger.Debugf("otherBounceVector: %v", otherBounceVector)
+
+	// Now, teleport them
+	newP.Position = newP.Position.Add(newPBounceVector)
+	other.Position = other.Position.Add(otherBounceVector)
 
 	return newP, newOther
-}
-
-// Returns whether the particles' circumferences touch or overlap.
-func (p Particle2D) IsTouching(other Particle2D) bool {
-	return p.CircumferenceDistanceTo(other) < tolerance
 }
 
 // Returns the distance from the CENTERS of the particles (not the circumference)
@@ -64,4 +85,9 @@ func (p Particle2D) IsApproaching(other Particle2D) bool {
 	separation := p.Position.Sub(other.Position)
 	relativeVelocity := p.Velocity.Sub(other.Velocity)
 	return separation.Dot(relativeVelocity) < 0
+}
+
+// Whether the particles are inside each other
+func (p Particle2D) Overlaps(other Particle2D) bool {
+	return p.CircumferenceDistanceTo(other) <= 0
 }

@@ -85,6 +85,29 @@ func TestVec2DotAndLength(t *testing.T) {
 	}
 }
 
+func TestVec2IsPointingTowards(t *testing.T) {
+	tests := []struct {
+		name       string
+		vector, to Vec2
+		want       bool
+	}{
+		{"same direction", Vec2{2, 3}, Vec2{4, 6}, true},
+		{"partially towards", Vec2{2, 1}, Vec2{1, 4}, true},
+		{"away", Vec2{-2, -3}, Vec2{4, 6}, false},
+		{"perpendicular", Vec2{0, 1}, Vec2{1, 0}, false},
+		{"zero vector", Zero(), Vec2{1, 0}, false},
+		{"point at origin", Vec2{1, 0}, Zero(), false},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.vector.IsPointingTowards(tt.to); got != tt.want {
+				t.Fatalf("IsPointingTowards(%v) = %v, want %v", tt.to, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestVec2DistanceTo(t *testing.T) {
 	tests := []struct {
 		name     string

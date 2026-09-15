@@ -41,9 +41,7 @@ func (w *World) DoCollisions(restitution float64) {
 			v := w.Particles[j]
 			logger.Debugf("Checking collision for %+v and %+v", u, v)
 
-			// Collision if they are fully inside each other or if they are just touching and approaching each other
-			insideEachOther := u.CircumferenceDistanceTo(v) < tolerance
-			if insideEachOther || (u.IsTouching(v) && u.IsApproaching(v)) {
+			if u.Overlaps(v) {
 				logger.Debug("They should collide")
 				w.Particles[i], w.Particles[j] = u.Collide(v, restitution)
 			} else {

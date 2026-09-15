@@ -100,6 +100,13 @@ func (u Vec2) Dot(other Vec2) float64 {
 	return u.X*other.X + u.Y*other.Y
 }
 
+// Whether u has a positive component in the
+// direction from the origin to point. Perpendicular and zero vectors do not
+// point towards a point.
+func (u Vec2) IsPointingTowards(point Vec2) bool {
+	return u.Dot(point) > 0
+}
+
 // Multiply vector by a scalar
 func (u Vec2) Mul(scalar float64) Vec2 {
 	return Vec2{scalar * u.X, scalar * u.Y}
@@ -121,7 +128,7 @@ func (u Vec2) Normalize() Vec2 {
 
 // Euclidean distance to another vector
 func (u Vec2) DistanceTo(other Vec2) float64 {
-	return math.Sqrt(math.Pow(u.X-other.X, 2) + math.Pow(u.Y-other.Y, 2))
+	return other.Sub(u).Length()
 }
 
 // Gets scalar length of vectur u in the direction of another vector
@@ -135,6 +142,11 @@ func (u Vec2) LengthInDirection(direction Vec2) float64 {
 func (u Vec2) SetLengthInDirection(newLength float64, direction Vec2) Vec2 {
 	unit := direction.Normalize()
 	return u.Sub(unit.Mul(u.Dot(unit))).Add(unit.Mul(newLength))
+}
+
+// Vector from point start to point end
+func (start Vec2) To(end Vec2) Vec2 {
+	return end.Sub(start)
 }
 
 func AddVectors(vectors ...Vec2) Vec2 {
