@@ -8,5 +8,5 @@ Go obviously
 ```bash
 git clone https://github.com/lassepladsen/physics-engine
 cd physics-engine
-go run demo.go
+go run demos/2_particles.go
 ```
