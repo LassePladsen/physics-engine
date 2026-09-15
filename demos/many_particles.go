@@ -36,7 +36,7 @@ func main() {
 	world := physics.GenerateRandom(physics.WorldGenConfig{
 		MinMass:       .1,
 		MaxMass:       10,
-		NumParticles:  100,
+		NumParticles:  50,
 		MinRadius:     .06,
 		MaxRadius:     .35,
 		MinPositions:  physics.Vec2{X: 0.1, Y: 2},
@@ -48,7 +48,7 @@ func main() {
 	world.Friction = friction
 	world.WindowBoundsRestitution = windowBoundsRestitution
 	// world.ParticleRestitution = particleRestitution
-	world.DisableCollisions = true
+	// world.DisableCollisions = true
 
 	game := graphics.Game{
 		DeltaTime: deltaTime,
