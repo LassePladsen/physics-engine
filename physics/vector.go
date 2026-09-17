@@ -2,12 +2,6 @@ package physics
 
 import "math"
 
-const tolerance = 1e-9
-
-func FloatEquals(first, second float64) bool {
-	return math.Abs(first-second) < tolerance
-}
-
 type Vec2 struct {
 	X, Y float64
 }

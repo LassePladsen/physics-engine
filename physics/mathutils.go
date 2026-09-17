@@ -5,6 +5,12 @@ import (
 	"math/rand/v2"
 )
 
+const tolerance = 1e-9
+
+func FloatEquals(first, second float64) bool {
+	return math.Abs(first-second) < tolerance
+}
+
 // Round to nearest int
 func Round(x float64) int {
 	return int(math.Round(x))
