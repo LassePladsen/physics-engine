@@ -36,7 +36,7 @@ func TestParticle2DCollide(t *testing.T) {
 		restitution             float64
 		wantParticle, wantOther Vec2
 	}{
-		{"elastic equal masses exchange velocities", Particle2D{Mass: 2, Velocity: Vec2{3, -1}}, Particle2D{Mass: 2, Velocity: Vec2{-4, 5}}, 1, Vec2{-4, 5}, Vec2{3, -1}},
+		{"elastic equal masses exchange velocities", Particle2D{Mass: 2, Velocity: Vec2{3, -1}, Position: Vec2{0, 0}, Radius: 2}, Particle2D{Mass: 2, Velocity: Vec2{-4, 5}, Position: Vec2{0.5, 0.5}, Radius: 5}, 1, Vec2{-4, 5}, Vec2{3, -1}},
 		{"elastic unequal masses with stationary particle", Particle2D{Mass: 1, Velocity: Vec2{6, -3}}, Particle2D{Mass: 2}, 1, Vec2{-2, 1}, Vec2{4, -2}},
 		{"perfectly inelastic uses center of mass velocity", Particle2D{Mass: 1, Velocity: Vec2{6, -3}}, Particle2D{Mass: 2}, 0, Vec2{2, -1}, Vec2{2, -1}},
 		{"partial restitution", Particle2D{Mass: 1, Velocity: Vec2{6, -3}}, Particle2D{Mass: 2}, 0.5, Vec2{0, 0}, Vec2{3, -1.5}},
@@ -134,6 +134,59 @@ func TestParticle2DOverlaps(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.particle.Overlaps(tt.other); got != tt.want {
 				t.Errorf("Overlaps() = %t, want %t", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParticle2DIsApproaching(t *testing.T) {
+	tests := []struct {
+		name            string
+		particle, other Particle2D
+		want            bool
+	}{
+		{
+			name:     "both approaching",
+			particle: Particle2D{Position: Vec2{0, 0}, Velocity: Vec2{3, 0}},
+			other:    Particle2D{Position: Vec2{3, 0}, Velocity: Vec2{-1, 0}},
+			want:     true,
+		},
+		{
+			name:     "separating one chasing the other",
+			particle: Particle2D{Position: Vec2{0, 0}, Velocity: Vec2{3, 0}},
+			other:    Particle2D{Position: Vec2{3, 0}, Velocity: Vec2{5, 0}},
+			want:     false,
+		},
+		{
+			name:     "approaching one chasing the other",
+			particle: Particle2D{Position: Vec2{0, 0}, Velocity: Vec2{3, 0}},
+			other:    Particle2D{Position: Vec2{3, 0}, Velocity: Vec2{1, 0}},
+			want:     true,
+		},
+		{
+			name:     "one stationary separating",
+			particle: Particle2D{Position: Vec2{0, 0}, Velocity: Vec2{0, 0}},
+			other:    Particle2D{Position: Vec2{3, 0}, Velocity: Vec2{1, 0}},
+			want:     false,
+		},
+		{
+			name:     "one stationary approaching",
+			particle: Particle2D{Position: Vec2{0, 0}, Velocity: Vec2{0, 0}},
+			other:    Particle2D{Position: Vec2{3, 0}, Velocity: Vec2{-1, 0}},
+			want:     true,
+		},
+		{
+			name:     "both stationary",
+			particle: Particle2D{Position: Vec2{0, 0}, Velocity: Vec2{0, 0}},
+			other:    Particle2D{Position: Vec2{3, 0}, Velocity: Vec2{0, 0}},
+			want:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.particle.IsApproaching(tt.other); got != tt.want {
+				t.Errorf("IsApproaching() = %t, want %t", got, tt.want)
 			}
 		})
 	}
