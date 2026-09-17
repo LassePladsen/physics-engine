@@ -58,14 +58,14 @@ func (p Particle2D) Collide(other Particle2D, restitution float64) (Particle2D, 
 
 	// This is the vector newP needs to move for it to leave the circumerfence of other
 	// But, lets move them both instead of only moving newP, move the greater mass less by using its ratio of the sum of masses
-	newPBounceVector := newP.Velocity.Normalize().Mul(newPDistanceToOthersCircumerfence * newP.Mass / sumMasses)
+	newPBounceVector := newP.Velocity.Normalize().Mul(newPDistanceToOthersCircumerfence * newOther.Mass / sumMasses)
 	logger.Debugf("newPBounceVector: %v", newPBounceVector)
-	otherBounceVector := other.Velocity.Normalize().Mul(newPDistanceToOthersCircumerfence * other.Mass / sumMasses)
+	otherBounceVector := other.Velocity.Normalize().Mul(newPDistanceToOthersCircumerfence * newP.Mass / sumMasses)
 	logger.Debugf("otherBounceVector: %v", otherBounceVector)
 
 	// Now, teleport them
 	newP.Position = newP.Position.Add(newPBounceVector)
-	other.Position = other.Position.Add(otherBounceVector)
+	newOther.Position = newOther.Position.Add(otherBounceVector)
 
 	return newP, newOther
 }
