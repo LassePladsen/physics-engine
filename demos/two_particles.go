@@ -10,15 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-const ticksPerSecond = 60.0
-const deltaTime = 1 / ticksPerSecond
-const gravityAcceleration = 9.81 // m/s^2
-const particleRestitution = 0.2
-const windowBoundsRestitution = 0.5
-const friction = 0.1
-
-func main() {
-	logger.Init()
+func runTwoParticlesDemo() {
 
 	// Graphics config
 	monitorWidth, monitorHeight := ebiten.Monitor().Size()
