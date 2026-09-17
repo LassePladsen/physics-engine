@@ -7,10 +7,10 @@ import (
 )
 
 type Particle2D struct {
-	Mass            float64 // kg
-	Position        Vec2    // m
-	Velocity        Vec2    // m/s
-	Radius          float64 // m
+	Mass     float64 // kg
+	Position Vec2    // m
+	Velocity Vec2    // m/s
+	Radius   float64 // m
 }
 
 // In-place advances the particle by deltaTime seconds.
@@ -27,10 +27,9 @@ func (p *Particle2D) Step(acceleration Vec2, deltaTime float64) {
 //
 // Momentum is conserved. Kinetic energy is also conserved for a perfectly elastic collision.
 func (p Particle2D) Collide(other Particle2D, restitution float64) (Particle2D, Particle2D) {
-	newP, newOther := applyCollision(p, other, restitution)
-	newP, newOther = fixOverlap(newP, newOther)
-
-	return newP, newOther
+	p, other = applyCollision(p, other, restitution)
+	p, other = fixOverlap(p, other)
+	return p, other
 }
 
 // Returns the distance from the CENTERS of the particles (not the circumference)
@@ -63,6 +62,14 @@ func (p Particle2D) Overlaps(other Particle2D) bool {
 	return p.CircumferenceDistanceTo(other) <= 0
 }
 
+func (p Particle2D) KineticEnergy() float64 {
+	return 0.5 * p.Mass * p.Velocity.Length() * p.Velocity.Length()
+}
+
+func (p Particle2D) Momentum() Vec2 {
+	return p.Velocity.Mul(p.Mass)
+}
+
 // Moves the particles outside of each others circumference to avoid new collision next frame,
 // and stop them getting stuck inside each other. Returns the new particle states
 //
@@ -72,19 +79,19 @@ func fixOverlap(p1, p2 Particle2D) (Particle2D, Particle2D) {
 	if sumMasses == 0 {
 		panic("sum of particle masses are zero, the formulas will divide by zero.")
 	}
-	p1DistanceToOthersCircumerfence := p1.Radius + p2.Radius - p1.DistanceTo(p2)
-	logger.Debugf("p1DistanceToOtherCircumerfence: %v", p1DistanceToOthersCircumerfence)
+	p1DistToP2Circumference := p1.Radius + p2.Radius - p1.DistanceTo(p2)
+	logger.Debugf("p1DistToP2Circumference: %v", p1DistToP2Circumference)
 
 	// This is the vector p1 needs to move for it to leave the circumerfence of other
 	// But, lets move them both instead of only moving p1, move the greater mass less by using its ratio of the sum of masses
-	p1BounceVector := p1.Velocity.Normalize().Mul(p1DistanceToOthersCircumerfence * p2.Mass / sumMasses)
+	p1BounceVector := p1.Velocity.Normalize().Mul(p1DistToP2Circumference * p2.Mass / sumMasses)
 	logger.Debugf("p1BounceVector: %v", p1BounceVector)
-	otherBounceVector := p2.Velocity.Normalize().Mul(p1DistanceToOthersCircumerfence * p1.Mass / sumMasses)
-	logger.Debugf("otherBounceVector: %v", otherBounceVector)
+	p2BounceVector := p2.Velocity.Normalize().Mul(p1DistToP2Circumference * p1.Mass / sumMasses)
+	logger.Debugf("p2BounceVector: %v", p2BounceVector)
 
 	// Now, teleport them
 	p1.Position = p1.Position.Add(p1BounceVector)
-	p2.Position = p2.Position.Add(otherBounceVector)
+	p2.Position = p2.Position.Add(p2BounceVector)
 
 	return p1, p2
 }
@@ -98,12 +105,18 @@ func applyCollision(p1, p2 Particle2D, restitution float64) (Particle2D, Particl
 	// Only collide if the centers are approaching
 	separation := p1.Position.Sub(p2.Position).Normalize()
 	relativeVelocity := p1.Velocity.Sub(p2.Velocity)
+	logger.Debugf("relativeVelocity: %v ", relativeVelocity)
 	separationSpeed := separation.Dot(relativeVelocity)
 	logger.Debugf("Seperation speed: %v", separationSpeed)
 	if separationSpeed < 0 {
-		impulse := -(1 + restitution) * separationSpeed // scalar
-		p1.Velocity = p1.Velocity.Add(separation.Mul(impulse / p1.Mass))
-		p2.Velocity = p2.Velocity.Sub(separation.Mul(impulse / p2.Mass))
+		impulse := -((1 + restitution) * separationSpeed) / (1/p1.Mass + 1/p2.Mass) // scalar
+		logger.Debugf("impulse: %v", impulse)
+		p1Add := separation.Mul(impulse / p1.Mass)
+		logger.Debugf("p1 adding velocity of: %v", p1Add)
+		p2Sub := separation.Mul(impulse / p2.Mass)
+		logger.Debugf("p2 subtracting velocity of: %v", p2Sub)
+		p1.Velocity = p1.Velocity.Add(p1Add)
+		p2.Velocity = p2.Velocity.Sub(p2Sub)
 	}
 	return p1, p2
 }
