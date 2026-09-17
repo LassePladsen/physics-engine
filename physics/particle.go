@@ -39,6 +39,8 @@ func (p Particle2D) Collide(other Particle2D, restitution float64) (Particle2D, 
 	newP := p
 	newOther := other
 
+	// TODO: correct impulse calculation to 2d, ask codex
+
 	// We should do velocity full collision only if this is truly a collision, which is when 
 	// the velocities are poining towards each other
 	if p.IsApproaching(other) {
