@@ -2,10 +2,11 @@ package physics
 
 import (
 	"testing"
+
 	"github.com/LassePladsen/physics-engine/logger"
 )
 
-var _ = func () int {
+var _ = func() int {
 	logger.Init()
 	return 0
 
@@ -206,29 +207,39 @@ func TestParticle2DCollide(t *testing.T) {
 					gotOther.Velocity, tt.wantOVelocity)
 			}
 
-			// Momentum must be conserved.
-			beforeMomentum := tt.p.Momentum().Add(tt.other.Momentum())
-			afterMomentum := gotP.Momentum().Add(gotOther.Momentum())
+			// Momentum is conserved.
+			wantMomentum := tt.p.Momentum().Add(tt.other.Momentum())
+			gotMomentum := gotP.Momentum().Add(gotOther.Momentum())
 
-			if !beforeMomentum.ApproxEquals(afterMomentum) {
+			if !gotMomentum.ApproxEquals(wantMomentum) {
 				t.Errorf(
-					"momentum not conserved: before=%v, after=%v",
-					beforeMomentum, afterMomentum,
+					"momentum = %v, want %v",
+					gotMomentum,
+					wantMomentum,
 				)
 			}
 
-			// Kinetic energy must be conserved for a perfectly
-			// elastic collision.
+			// Kinetic energy is conserved for an elastic collision.
 			if tt.restitution == 1 {
-				beforeKE := tt.p.KineticEnergy() + tt.other.KineticEnergy()
-				afterKE := gotP.KineticEnergy() + gotOther.KineticEnergy()
+				wantKE := tt.p.KineticEnergy() + tt.other.KineticEnergy()
+				gotKE := gotP.KineticEnergy() + gotOther.KineticEnergy()
 
-				if !FloatEquals(beforeKE, afterKE) {
+				if !FloatEquals(gotKE, wantKE) {
 					t.Errorf(
-						"kinetic energy not conserved: before=%v, after=%v",
-						beforeKE, afterKE,
+						"kinetic energy = %v, want %v",
+						gotKE,
+						wantKE,
 					)
 				}
+			}
+
+			// Particles must no longer overlap.
+			distance := gotP.CircumferenceDistanceTo(gotOther)
+			if distance < 0 {
+				t.Errorf(
+					"particles still overlap: circumference distance = %v",
+					distance,
+				)
 			}
 		})
 	}

@@ -11,25 +11,16 @@ import (
 )
 
 func runTwoParticlesDemo() {
-
-	// Graphics config
 	monitorWidth, monitorHeight := ebiten.Monitor().Size()
 	windowWidth := monitorWidth * 2 / 3
-	windowHeight := monitorHeight * 2 / 3
-	windowX := (monitorWidth - windowWidth) / 2
-	windowY := (monitorHeight - windowHeight) / 2
-	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	ebiten.SetWindowSize(windowWidth, windowHeight)
-	ebiten.SetWindowPosition(windowX, windowY)
-	ebiten.SetWindowTitle("Physics Engine")
-	ebiten.SetTPS(ticksPerSecond)
+	windowHeight := monitorHeight * 2 / 3 
 
 	// Particles
 	radius := 0.2 // m
 	p1 := physics.Particle2D{
 		Mass:     1,
 		Radius:   radius,
-		Position: physics.Vec2{X: radius * 1.5, Y: graphics.PixelsToMeters(monitorHeight / 2)},
+		Position: physics.Vec2{X: radius * 1.5, Y: graphics.PixelsToMeters(windowHeight * 2 / 3 )},
 		Velocity: physics.Vec2{X: 5, Y: 0},
 	}
 	p2 := p1
@@ -50,20 +41,7 @@ func runTwoParticlesDemo() {
 		},
 	}
 
-	/// KEYBINDS
-	graphics.AddKeybind(graphics.TogglePause, true, ebiten.KeyP) // pause
-
-	// exit
-	exit := func() {
-		os.Exit(0)
-	}
-	graphics.AddKeybind(exit, false, ebiten.KeyEscape)
-	graphics.AddKeybind(exit, false, ebiten.KeyQ)
-	graphics.AddKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
-
-	// Step once
-	graphics.AddKeybind(func() { game.Step() }, true, ebiten.KeyS)
-	/// END KEYBINDS
+	graphics.InitKeybinds(game)
 
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {

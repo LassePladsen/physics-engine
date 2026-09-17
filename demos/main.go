@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/LassePladsen/physics-engine/graphics"
 	"github.com/LassePladsen/physics-engine/logger"
 )
 
@@ -26,6 +27,7 @@ type demo struct {
 var availableDemos = []demo{
 	{name: "two-particles", run: runTwoParticlesDemo},
 	{name: "many-particles", run: runManyParticlesDemo},
+	{name: "space", run: runSpaceDemo},
 }
 
 func main() {
@@ -45,6 +47,7 @@ func runDemo(program string, args []string, stdout, stderr io.Writer, demos []de
 	for _, demo := range demos {
 		if args[0] == demo.name {
 			initLogger()
+			graphics.InitGraphics(ticksPerSecond)
 			demo.run()
 			return 0
 		}

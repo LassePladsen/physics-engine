@@ -11,18 +11,9 @@ import (
 )
 
 func runManyParticlesDemo() {
-
-	// Graphics config
 	monitorWidth, monitorHeight := ebiten.Monitor().Size()
 	windowWidth := monitorWidth * 2 / 3
 	windowHeight := monitorHeight * 2 / 3
-	windowX := (monitorWidth - windowWidth) / 2
-	windowY := (monitorHeight - windowHeight) / 2
-	ebiten.SetWindowResizingMode(ebiten.WindowResizingModeEnabled)
-	ebiten.SetWindowSize(windowWidth, windowHeight)
-	ebiten.SetWindowPosition(windowX, windowY)
-	ebiten.SetWindowTitle("Physics Engine")
-	ebiten.SetTPS(ticksPerSecond)
 
 	// Init the simulation
 	world := physics.GenerateRandom(physics.WorldGenConfig{
@@ -47,20 +38,7 @@ func runManyParticlesDemo() {
 		World:     world,
 	}
 
-	/// KEYBINDS
-	graphics.AddKeybind(graphics.TogglePause, true, ebiten.KeyP) // pause
-
-	// exit
-	exit := func() {
-		os.Exit(0)
-	}
-	graphics.AddKeybind(exit, false, ebiten.KeyEscape)
-	graphics.AddKeybind(exit, false, ebiten.KeyQ)
-	graphics.AddKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
-
-	// Step once
-	graphics.AddKeybind(func() { game.Step() }, true, ebiten.KeyS)
-	/// END KEYBINDS
+	graphics.InitKeybinds(game)
 
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {

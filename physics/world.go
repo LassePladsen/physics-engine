@@ -15,13 +15,31 @@ type World struct {
 	Friction                float64
 	lastDeltaTime           float64
 	Gravity                 Vec2 // Gravitatonal acceleration (m/s^2)
+	ParticleToParticleGravitationalStrength float64 // m3 kg-1 s-2. newtonian gravitation Big G
+
 }
 
 // Advances every particle in the world by deltaTime seconds.
 func (w *World) Step(deltaTime float64) {
 	w.lastDeltaTime = deltaTime
 	for i := range w.Particles {
-		w.Particles[i].Step(w.Gravity, deltaTime)
+		// Particle-to-particle gravity
+		sumParticleGravity := Zero()
+		for j := range w.Particles {
+			if i == j {
+				continue
+			}
+			// Dont apply gravity if they are rubbing up against each other (O_o)
+			if w.Particles[i].IsTouching(w.Particles[j]) {
+				continue
+			}
+			sumParticleGravity = sumParticleGravity.Add(w.Particles[i].GravityFrom(w.Particles[j], w.ParticleToParticleGravitationalStrength))
+
+		}
+		logger.Debugf("sumParticleGravity: %v", sumParticleGravity)
+		acceleration := w.Gravity.Add(sumParticleGravity)
+		logger.Debugf("acceleration: %v", acceleration)
+		w.Particles[i].Step(acceleration, deltaTime)
 	}
 	if !w.DisableCollisions {
 		w.DoCollisions(w.ParticleRestitution) // change to inelastic here
@@ -41,7 +59,7 @@ func (w *World) DoCollisions(restitution float64) {
 			v := w.Particles[j]
 			logger.Debugf("Checking collision for %+v and %+v", u, v)
 
-			if u.Overlaps(v) {
+			if u.ShouldCollide(v) {
 				logger.Debug("They should collide")
 				w.Particles[i], w.Particles[j] = u.Collide(v, restitution)
 			} else {
