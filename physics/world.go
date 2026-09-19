@@ -33,7 +33,7 @@ func (w *World) Step(deltaTime float64) {
 			if w.Particles[i].IsTouching(w.Particles[j]) {
 				continue
 			}
-			sumParticleGravity = sumParticleGravity.Add(w.Particles[i].GravityFrom(w.Particles[j], w.ParticleToParticleGravitationalStrength))
+			sumParticleGravity = sumParticleGravity.Add(w.Particles[i].GravityFrom(w.Particles[j], w.ParticleToParticleGravitationalStrength).Mul(1/w.Particles[i].Mass))
 
 		}
 		logger.Debugf("sumParticleGravity: %v", sumParticleGravity)
