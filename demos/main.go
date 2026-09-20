@@ -27,7 +27,9 @@ type demo struct {
 var availableDemos = []demo{
 	{name: "two-particles", run: runTwoParticlesDemo},
 	{name: "many-particles", run: runManyParticlesDemo},
-	{name: "space", run: runSpaceDemo},
+	{name: "orbit", run: runOrbitDemo},
+	{name: "unstable-orbit", run: runUnstableOrbitDemo},
+	{name: "merge", run: runMergeDemo},
 }
 
 func main() {

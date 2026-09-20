@@ -10,7 +10,7 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
-func runSpaceDemo() {
+func runOrbitDemo() {
 	monitorWidth, monitorHeight := ebiten.Monitor().Size()
 	windowWidth := monitorWidth * 2 / 3
 	windowHeight := monitorHeight * 2 / 3 
