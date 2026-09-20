@@ -17,6 +17,7 @@ type World struct {
 	lastDeltaTime           float64
 	Gravity                 Vec2 // Gravitatonal acceleration (m/s^2)
 	ParticleToParticleGravitationalStrength float64 // m3 kg-1 s-2. newtonian gravitation Big G
+	ParticleMergeEnabled bool // whether particles should absorb each other and combine to one bigger particle. Takes precedence over collisions
 
 }
 
@@ -31,10 +32,6 @@ func (w *World) Step(deltaTime float64) {
 				continue
 			}
 
-			// Dont apply gravity if they are rubbing up against each other (O_o)
-			if !w.Particles[i].IsTouching(w.Particles[j]) {
-				sumParticleGravity = sumParticleGravity.Add(w.Particles[i].GravityFrom(w.Particles[j], w.ParticleToParticleGravitationalStrength))
-			}
 			sumParticleGravity = sumParticleGravity.Add(w.Particles[i].GravityFrom(w.Particles[j], w.ParticleToParticleGravitationalStrength).Mul(1/w.Particles[i].Mass))
 		}
 		logger.Debugf("sumParticleGravity: %v", sumParticleGravity)

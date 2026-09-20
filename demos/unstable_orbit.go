@@ -18,10 +18,10 @@ func runUnstableOrbitDemo() {
 	// Particles
 	radius := 0.2 // m
 	p1 := physics.Particle2D{
-		Mass:     2e5, // kg
+		Mass:     1e11, // kg
 		Radius:   radius,
 		Position: physics.Vec2{X: graphics.PixelsToMeters(physics.Round(float64(windowWidth) * 1.2 / 3.0)), Y: graphics.PixelsToMeters(windowHeight / 2)},
-		Velocity: physics.Vec2{X: 0, Y: 0.4},
+		Velocity: physics.Vec2{X: 0, Y: 0.6},
 		GravityEnabled: true,
 	}
 	p2 := p1
