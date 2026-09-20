@@ -1,6 +1,7 @@
 package physics
 
 import (
+	"math"
 	"testing"
 
 	"github.com/LassePladsen/physics-engine/logger"
@@ -293,4 +294,290 @@ func TestParticle2DCollidePanics(t *testing.T) {
 			tt.p.Collide(tt.other, tt.restitution)
 		})
 	}
+}
+
+func TestParticle2DMerge(t *testing.T) {
+	tests := []struct {
+		name  string
+		p     Particle2D
+		other Particle2D
+		wantP Particle2D
+	}{
+		{
+			name: "merge two equal particles",
+			p: Particle2D{
+				Mass:     1,
+				Position: Vec2{0, 0},
+				Radius:   2,
+				Velocity: Vec2{1, 0},
+			},
+			other: Particle2D{
+				Mass:     1,
+				Position: Vec2{1, 0},
+				Radius:   2,
+				Velocity: Vec2{-1, 0},
+			},
+			wantP: Particle2D{
+				Mass:     2,
+				Position: Vec2{0.5, 0},
+				Radius:   math.Cbrt(16),
+				Velocity: Vec2{0, 0},
+			},
+		},
+		{
+			name: "heavier particle influences position more",
+			p: Particle2D{
+				Mass:     3,
+				Position: Vec2{0, 0},
+				Radius:   1,
+				Velocity: Vec2{0, 0},
+			},
+			other: Particle2D{
+				Mass:     1,
+				Position: Vec2{4, 0},
+				Radius:   1,
+				Velocity: Vec2{0, 0},
+			},
+			wantP: Particle2D{
+				Mass:     4,
+				Position: Vec2{1, 0},
+				Radius:   math.Cbrt(2),
+				Velocity: Vec2{0, 0},
+			},
+		},
+		{
+			name: "heavier particle dominates velocity",
+			p: Particle2D{
+				Mass:     3,
+				Position: Vec2{0, 0},
+				Radius:   1,
+				Velocity: Vec2{2, 0},
+			},
+			other: Particle2D{
+				Mass:     1,
+				Position: Vec2{4, 0},
+				Radius:   1,
+				Velocity: Vec2{0, 0},
+			},
+			wantP: Particle2D{
+				Mass:     4,
+				Position: Vec2{1, 0},
+				Radius:   math.Cbrt(2),
+				Velocity: Vec2{1.5, 0},
+			},
+		},
+		{
+			name: "stationary particles",
+			p: Particle2D{
+				Mass:     2,
+				Position: Vec2{-2, 3},
+				Radius:   3,
+				Velocity: Vec2{0, 0},
+			},
+			other: Particle2D{
+				Mass:     4,
+				Position: Vec2{4, 6},
+				Radius:   2,
+				Velocity: Vec2{0, 0},
+			},
+			wantP: Particle2D{
+				Mass:     6,
+				Position: Vec2{2, 5},
+				Radius:   math.Cbrt(35),
+				Velocity: Vec2{0, 0},
+			},
+		},
+		{
+			name: "same position",
+			p: Particle2D{
+				Mass:     2,
+				Position: Vec2{5, -3},
+				Radius:   2,
+				Velocity: Vec2{1, 2},
+			},
+			other: Particle2D{
+				Mass:     3,
+				Position: Vec2{5, -3},
+				Radius:   1,
+				Velocity: Vec2{-1, 0},
+			},
+			wantP: Particle2D{
+				Mass:     5,
+				Position: Vec2{5, -3},
+				Radius:   math.Cbrt(9),
+				Velocity: Vec2{-0.2, 0.8},
+			},
+		},
+		{
+			name: "opposing velocities cancel",
+			p: Particle2D{
+				Mass:     2,
+				Position: Vec2{-1, 0},
+				Radius:   1,
+				Velocity: Vec2{3, 0},
+			},
+			other: Particle2D{
+				Mass:     2,
+				Position: Vec2{1, 0},
+				Radius:   1,
+				Velocity: Vec2{-3, 0},
+			},
+			wantP: Particle2D{
+				Mass:     4,
+				Position: Vec2{0, 0},
+				Radius:   math.Cbrt(2),
+				Velocity: Vec2{0, 0},
+			},
+		},
+		{
+			name: "different velocity directions",
+			p: Particle2D{
+				Mass:     2,
+				Position: Vec2{0, 0},
+				Radius:   1,
+				Velocity: Vec2{2, 4},
+			},
+			other: Particle2D{
+				Mass:     1,
+				Position: Vec2{3, 3},
+				Radius:   1,
+				Velocity: Vec2{-1, 1},
+			},
+			wantP: Particle2D{
+				Mass:     3,
+				Position: Vec2{1, 1},
+				Radius:   math.Cbrt(2),
+				Velocity: Vec2{1, 3},
+			},
+		},
+		{
+			name: "zero velocity with different masses",
+			p: Particle2D{
+				Mass:     10,
+				Position: Vec2{0, 0},
+				Radius:   2,
+				Velocity: Vec2{0, 0},
+			},
+			other: Particle2D{
+				Mass:     1,
+				Position: Vec2{11, 0},
+				Radius:   1,
+				Velocity: Vec2{0, 0},
+			},
+			wantP: Particle2D{
+				Mass:     11,
+				Position: Vec2{1, 0},
+				Radius:   math.Cbrt(9),
+				Velocity: Vec2{0, 0},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotP := tt.p.Merge(tt.other)
+
+			if !gotP.Position.ApproxEquals(tt.wantP.Position) {
+				t.Errorf(
+					"Position = %v, want %v",
+					gotP.Position,
+					tt.wantP.Position,
+				)
+			}
+
+			if !FloatEquals(gotP.Mass, tt.wantP.Mass) {
+				t.Errorf(
+					"Mass = %v, want %v",
+					gotP.Mass,
+					tt.wantP.Mass,
+				)
+			}
+
+			if !gotP.Velocity.ApproxEquals(tt.wantP.Velocity) {
+				t.Errorf(
+					"Velocity = %v, want %v",
+					gotP.Velocity,
+					tt.wantP.Velocity,
+				)
+			}
+
+			if !FloatEquals(gotP.Radius, tt.wantP.Radius) {
+				t.Errorf(
+					"Radius = %v, want %v",
+					gotP.Radius,
+					tt.wantP.Radius,
+				)
+			}
+
+			// Momentum should be conserved.
+			wantMomentum := tt.p.Momentum().Add(tt.other.Momentum())
+			if !gotP.Momentum().ApproxEquals(wantMomentum) {
+				t.Errorf(
+					"Momentum = %v, want %v",
+					gotP.Momentum(),
+					wantMomentum,
+				)
+			}
+		})
+	}
+}
+
+func TestParticle2DMergeConservesMass(t *testing.T) {
+	p := Particle2D{Mass: 2}
+	other := Particle2D{Mass: 7}
+
+	got := p.Merge(other)
+
+	if !FloatEquals(got.Mass, p.Mass+other.Mass) {
+		t.Errorf("Mass = %v, want %v", got.Mass, p.Mass+other.Mass)
+	}
+}
+
+func TestParticle2DMergeConservesMomentum(t *testing.T) {
+	p := Particle2D{
+		Mass:     2,
+		Velocity: Vec2{3, -2},
+	}
+	other := Particle2D{
+		Mass:     5,
+		Velocity: Vec2{-1, 4},
+	}
+
+	got := p.Merge(other)
+
+	want := p.Momentum().Add(other.Momentum())
+
+	if !got.Momentum().ApproxEquals(want) {
+		t.Errorf("Momentum = %v, want %v", got.Momentum(), want)
+	}
+}
+
+func TestParticle2DMergeConservesVolume(t *testing.T) {
+	p := Particle2D{Mass: 1, Radius: 2}
+	other := Particle2D{Mass: 1, Radius: 3}
+
+	got := p.Merge(other)
+
+	wantVolume := math.Pow(p.Radius, 3) + math.Pow(other.Radius, 3)
+
+	if !FloatEquals(math.Pow(got.Radius, 3), wantVolume) {
+		t.Errorf(
+			"Radius³ = %v, want %v",
+			math.Pow(got.Radius, 3),
+			wantVolume,
+		)
+	}
+}
+
+func TestParticle2DMergeZeroTotalMassPanics(t *testing.T) {
+	p := Particle2D{Mass: 1}
+	other := Particle2D{Mass: -1}
+
+	defer func() {
+		if recover() == nil {
+			t.Error("Merge did not panic for zero total mass")
+		}
+	}()
+
+	p.Merge(other)
 }

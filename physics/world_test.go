@@ -73,10 +73,10 @@ func TestWorldStepResolvesHeadOnCollision(t *testing.T) {
 	world.Step(0)
 
 	if got := world.Particles[0].Velocity; !got.ApproxEquals(Vec2{X: -2.5, Y: 9.3195}) {
-		t.Errorf("first particle velocity = %v, want {-2.5 9.3195}", got)
+		t.Errorf("first particle velocity = %v, want {-2.5 9.3195}. Position = %v", got, world.Particles[0].Position)
 	}
 	if got := world.Particles[1].Velocity; !got.ApproxEquals(Vec2{X: 2.5, Y: 9.3195}) {
-		t.Errorf("second particle velocity = %v, want {2.5 9.3195}", got)
+		t.Errorf("second particle velocity = %v, want {2.5 9.3195}. Position = %v", got, world.Particles[1].Position)
 	}
 }
 
@@ -238,3 +238,34 @@ func TestWorldEnsureParticlesInBoundsAppliesGroundFrictionWithoutReversing(t *te
 		})
 	}
 }
+
+// TODO:
+// func TestWorldAssimilate(t *testing.T) {
+// 	tests := []struct {
+// 		name          string
+// 		particles     []Particle2D
+// 		wantParticles []Particle2D
+// 	}{
+// 		{
+// 			name: "assimilate two equal particles",
+// 			particles: []Particle2D{
+// 				{Mass: 1, Position: Vec2{X: 0, Y: 0}, Velocity: Vec2{X: 5, Y: 9.3195}, Radius: 0.2},
+// 				{Mass: 1, Position: Vec2{X: 0.1, Y: 0}, Velocity: Vec2{X: -5, Y: 9.3195}, Radius: 0.2},
+// 			},
+// 		},
+// 	}
+
+// 	for _, tt := range tests {
+// 		t.Run(tt.name, func(t *testing.T) {
+// 			world := World{
+// 				Particles:     tt.particles,
+// 				lastDeltaTime: 0.5,
+// 			}
+
+// 			world.EnsureParticlesInBoundary(10, 10)
+// 			if got := world.Particles[0].Velocity; !got.ApproxEquals(tt.wantNumParticles) {
+// 				t.Errorf("velocity = %v, want %v", got, tt.wantNumParticles)
+// 			}
+// 		})
+// 	}
+// }

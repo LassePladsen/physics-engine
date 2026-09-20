@@ -40,6 +40,26 @@ func (p Particle2D) ShouldCollide(other Particle2D) bool {
 	return p.Overlaps(other)
 }
 
+// Absorbs the other particle and returns the newly combined particle state. Simulated perfectly inelastic collision
+func (p Particle2D) Merge(other Particle2D) Particle2D {
+	newP := p
+	newP.Mass += other.Mass
+	if FloatEquals(newP.Mass, 0.0) {
+		panic("Particle2d.Assimilate: Sum of masses is zero")
+	}
+	// Conserve volume, so we dont just add the radii together; use cubed radii from spherical volume formula
+	newP.Radius = math.Cbrt(math.Pow(newP.Radius, 3) + math.Pow(other.Radius, 3))
+
+	// Conserve momentum https://en.wikipedia.org/wiki/Inelastic_collision
+	newP.Velocity = AddVectors(p.Momentum(), other.Momentum()).Mul(1 / newP.Mass)
+
+	// Merge positions, but the more massive particle should be moved less so scale as the ratio of total mass
+	x := p.Position.X*p.Mass/newP.Mass + other.Position.X*other.Mass/newP.Mass
+	y := p.Position.Y*p.Mass/newP.Mass + other.Position.Y*other.Mass/newP.Mass
+	newP.Position = Vec2{x, y}
+	return newP
+}
+
 // Returns the distance from the CENTERS of the particles (not the circumference)
 func (p Particle2D) DistanceTo(other Particle2D) float64 {
 	distance := p.Position.DistanceTo(other.Position)
@@ -71,7 +91,7 @@ func (p Particle2D) IsApproaching(other Particle2D) bool {
 
 // Whether the particles are inside each other
 func (p Particle2D) Overlaps(other Particle2D) bool {
-	return p.CircumferenceDistanceTo(other) < 0
+	return p.CircumferenceDistanceTo(other) <= 0
 }
 
 // Whether the particles are just touching circumeferences. See Overlaps() to check overlap
@@ -105,7 +125,7 @@ func (p Particle2D) GravityFrom(other Particle2D, gravitationalStrength float64)
 	if !p.GravityEnabled {
 		return Zero()
 	}
-	factor :=  gravitationalStrength * p.Mass * other.Mass / (p.DistanceTo(other) * p.DistanceTo(other))
+	factor := gravitationalStrength * p.Mass * other.Mass / (p.DistanceTo(other) * p.DistanceTo(other))
 	unitDirection := p.To(other).Normalize()
 	return unitDirection.Mul(factor)
 }

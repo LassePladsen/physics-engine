@@ -24,6 +24,7 @@ type World struct {
 // Advances every particle in the world by deltaTime seconds.
 func (w *World) Step(deltaTime float64) {
 	w.lastDeltaTime = deltaTime
+	indexPairsToMerge := make(map[[2]int]bool)
 	for i := range w.Particles {
 		// Particle-to-particle gravity
 		sumParticleGravity := Zero()
@@ -31,6 +32,13 @@ func (w *World) Step(deltaTime float64) {
 			if i == j {
 				continue
 			}
+
+			if (w.ShouldMerge(i, j)) {
+				// Dont add duplicate (0, 1) (1, 0) 
+				a, b := canonicalPair(i, j)
+				indexPairsToMerge[[2]int{a, b}] = true
+			}
+
 
 			sumParticleGravity = sumParticleGravity.Add(w.Particles[i].GravityFrom(w.Particles[j], w.ParticleToParticleGravitationalStrength).Mul(1/w.Particles[i].Mass))
 		}
@@ -42,6 +50,30 @@ func (w *World) Step(deltaTime float64) {
 		// Collisions
 		w.DoCollisions(w.ParticleRestitution) // change to inelastic here
 	}
+	
+	// Do merges, first filter unique
+	for pair := range indexPairsToMerge {
+		w.MergeParticlesAt(pair[0], pair[1])
+	}
+}
+
+// Merges particles at given indexes of w.Particles array
+func (w *World) MergeParticlesAt(index1, index2 int) {
+	logger.Debugf("LP index1: %v", index1)
+	logger.Debugf("LP index2: %v", index2)
+	// p1 particle becomes the newly combined particle, then remove p2 from the array
+	w.Particles[index1] = w.Particles[index1].Merge(w.Particles[index2])
+	w.Particles = append(w.Particles[:index2], w.Particles[index2+1:]...)
+}
+
+// Whether particles at indexes should merge
+func (w *World) ShouldMerge(index1, index2 int) bool {
+	if !w.ParticleMergeEnabled {
+		return false
+	}
+	p1 := w.Particles[index1]
+	p2 := w.Particles[index2]
+	return p1.Overlaps(p2) || p1.IsTouching(p2)
 }
 
 // Checks and runs collisions for each relevant particle. Panics if not: 0 <= resitution <= 1 (https://en.wikipedia.org/wiki/Coefficient_of_restitution)
@@ -182,4 +214,11 @@ func GenerateRandom(config WorldGenConfig) World {
 
 	}
 	return world
+}
+
+func canonicalPair(a, b int) (int, int) {
+	if a > b {
+		b, a = a, b
+	}
+	return a, b
 }
