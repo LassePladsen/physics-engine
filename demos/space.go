@@ -18,10 +18,10 @@ func runSpaceDemo() {
 	// Particles
 	radius := 0.2 // m
 	p1 := physics.Particle2D{
-		Mass:     1,
+		Mass:     3e5, // kg
 		Radius:   radius,
 		Position: physics.Vec2{X: graphics.PixelsToMeters(physics.Round(float64(windowWidth) * 1.2 / 3.0)), Y: graphics.PixelsToMeters(windowHeight / 2)},
-		Velocity: physics.Vec2{X: 0.2, Y: 0.3},
+		Velocity: physics.Vec2{X: 0.1, Y: 0.8},
 		GravityEnabled: true,
 	}
 	p2 := p1
@@ -34,9 +34,9 @@ func runSpaceDemo() {
 	game := graphics.Game{
 		DeltaTime: deltaTime,
 		World: physics.World{
-			WindowBoundsRestitution: windowBoundsRestitution,
+			DisableBounds: true,
 			Particles:               []physics.Particle2D{p1, p2},
-			ParticleToParticleGravitationalStrength: 1,
+			ParticleToParticleGravitationalStrength: 6.6743e-11,
 		},
 	}
 

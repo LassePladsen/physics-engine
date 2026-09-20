@@ -9,6 +9,7 @@ import (
 // World contains the particles that make up a simulation.
 type World struct {
 	DisableCollisions bool
+	DisableBounds bool
 	Particles               []Particle2D
 	ParticleRestitution     float64 // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
 	WindowBoundsRestitution float64 // coefficient of restitution 'e'. Should be 0 <= e <= 1. https://en.wikipedia.org/wiki/Coefficient_of_restitution
@@ -29,25 +30,28 @@ func (w *World) Step(deltaTime float64) {
 			if i == j {
 				continue
 			}
+
 			// Dont apply gravity if they are rubbing up against each other (O_o)
-			if w.Particles[i].IsTouching(w.Particles[j]) {
-				continue
+			if !w.Particles[i].IsTouching(w.Particles[j]) {
+				sumParticleGravity = sumParticleGravity.Add(w.Particles[i].GravityFrom(w.Particles[j], w.ParticleToParticleGravitationalStrength))
 			}
 			sumParticleGravity = sumParticleGravity.Add(w.Particles[i].GravityFrom(w.Particles[j], w.ParticleToParticleGravitationalStrength).Mul(1/w.Particles[i].Mass))
-
 		}
 		logger.Debugf("sumParticleGravity: %v", sumParticleGravity)
 		acceleration := w.Gravity.Add(sumParticleGravity)
 		logger.Debugf("acceleration: %v", acceleration)
 		w.Particles[i].Step(acceleration, deltaTime)
-	}
-	if !w.DisableCollisions {
+
+		// Collisions
 		w.DoCollisions(w.ParticleRestitution) // change to inelastic here
 	}
 }
 
 // Checks and runs collisions for each relevant particle. Panics if not: 0 <= resitution <= 1 (https://en.wikipedia.org/wiki/Coefficient_of_restitution)
 func (w *World) DoCollisions(restitution float64) {
+	if w.DisableCollisions {
+		return
+	}
 	if math.IsNaN(restitution) || restitution > 1 || restitution < 0 {
 		panic("Coefficient of restitution needs to be between 0 and 1, inclusive.")
 	}
