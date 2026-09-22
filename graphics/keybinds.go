@@ -65,9 +65,9 @@ func (r *registeredKeybind) invokeIfPressed() {
 // registered value retains the normalized keys needed when dispatching.
 var keybindCallbacks = make(map[string]*registeredKeybind)
 
-// AddKeybind registers a callback for a combination of any number
+// RegisterKeybind registers a callback for a combination of any number
 // of keys. Key order and duplicate keys do not affect the combination.
-func AddKeybind(callback func(), onJustPress bool, keys ...ebiten.Key) {
+func RegisterKeybind(callback func(), onJustPress bool, keys ...ebiten.Key) {
 	normalizedKeys := normalizeKeys(keys)
 	if len(normalizedKeys) == 0 {
 		return

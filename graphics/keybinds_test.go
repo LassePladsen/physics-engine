@@ -35,8 +35,8 @@ func TestAddKeybindNormalizesKeysAndAppendsCallbacks(t *testing.T) {
 	useKeyboard(t, simulatedKeyboard{})
 	first, second := func() {}, func() {}
 
-	AddKeybind(first, true, ebiten.KeyC, ebiten.KeyControl, ebiten.KeyC)
-	AddKeybind(second, true, ebiten.KeyControl, ebiten.KeyC)
+	RegisterKeybind(first, true, ebiten.KeyC, ebiten.KeyControl, ebiten.KeyC)
+	RegisterKeybind(second, true, ebiten.KeyControl, ebiten.KeyC)
 
 	if got := len(keybindCallbacks); got != 1 {
 		t.Fatalf("registered bindings = %d, want 1", got)
@@ -57,7 +57,7 @@ func TestAddKeybindNormalizesKeysAndAppendsCallbacks(t *testing.T) {
 func TestAddKeybindPreservesJustPressedMode(t *testing.T) {
 	useKeyboard(t, simulatedKeyboard{})
 
-	AddKeybind(func() {}, true, ebiten.KeyP)
+	RegisterKeybind(func() {}, true, ebiten.KeyP)
 
 	binding := keybindCallbacks[canonicalKey([]ebiten.Key{ebiten.KeyP})]
 	if binding == nil {
@@ -71,7 +71,7 @@ func TestAddKeybindPreservesJustPressedMode(t *testing.T) {
 func TestAddKeybindIgnoresEmptyCombinations(t *testing.T) {
 	useKeyboard(t, simulatedKeyboard{})
 
-	AddKeybind(func() {}, false)
+	RegisterKeybind(func() {}, false)
 
 	if got := len(keybindCallbacks); got != 0 {
 		t.Fatalf("registered bindings = %d, want 0", got)
@@ -82,7 +82,7 @@ func TestRunKeybindsRunsHeldBindingsEveryFrame(t *testing.T) {
 	state := &simulatedKeyboard{held: map[ebiten.Key]bool{ebiten.KeyA: true}}
 	useKeyboard(t, state)
 	called := 0
-	AddKeybind(func() { called++ }, false, ebiten.KeyA)
+	RegisterKeybind(func() { called++ }, false, ebiten.KeyA)
 
 	RunKeybinds()
 	RunKeybinds()
@@ -99,7 +99,7 @@ func TestRunKeybindsRunsJustPressedBindingsOnlyOnPressFrame(t *testing.T) {
 	}
 	useKeyboard(t, state)
 	called := 0
-	AddKeybind(func() { called++ }, true, ebiten.KeyA)
+	RegisterKeybind(func() { called++ }, true, ebiten.KeyA)
 
 	RunKeybinds()
 	state.justPressed[ebiten.KeyA] = false
@@ -114,7 +114,7 @@ func TestRunKeybindsInvokesCombinationOnlyWhenAllKeysArePressed(t *testing.T) {
 	state := &simulatedKeyboard{held: map[ebiten.Key]bool{ebiten.KeyControl: true}}
 	useKeyboard(t, state)
 	called := 0
-	AddKeybind(func() { called++ }, false, ebiten.KeyC, ebiten.KeyControl)
+	RegisterKeybind(func() { called++ }, false, ebiten.KeyC, ebiten.KeyControl)
 
 	RunKeybinds()
 	state.held[ebiten.KeyC] = true

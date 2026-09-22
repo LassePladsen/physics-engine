@@ -21,16 +21,19 @@ func InitGraphics(ticksPerSecond int) {
 }
 
 func InitKeybinds(game Game) {
-	AddKeybind(TogglePause, true, ebiten.KeyP) // pause
+	RegisterKeybind(TogglePause, true, ebiten.KeyP) // pause
 
 	// exit
 	exit := func() {
 		os.Exit(0)
 	}
-	AddKeybind(exit, false, ebiten.KeyEscape)
-	AddKeybind(exit, false, ebiten.KeyQ)
-	AddKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
+	RegisterKeybind(exit, false, ebiten.KeyEscape)
+	RegisterKeybind(exit, false, ebiten.KeyQ)
+	RegisterKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
+
+	// Zooming
+	RegisterKeybind(exit, false, ebiten.MouseButton4)
 
 	// Step once
-	AddKeybind(func() { game.Step() }, true, ebiten.KeyS)
+	RegisterKeybind(func() { game.Step() }, true, ebiten.KeyS)
 }
