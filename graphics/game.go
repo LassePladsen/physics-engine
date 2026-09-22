@@ -19,22 +19,36 @@ var Paused = false
 // The main state for the rendering game engine
 type Game struct {
 	World     physics.World
+	Camera    Camera
 	DeltaTime float64
 }
 
+func NewGame() Game {
+	return Game{
+		World:  physics.NewWorld(),
+		Camera: NewCamera(),
+	}
+}
+
 func (g *Game) DrawAll(screen *ebiten.Image) {
-	_, screenHeight := ebiten.ScreenSize()
+	screenWidth, screenHeight := ebiten.ScreenSize()
+
+	// TODO: make bounds a variable in World and remove DisableBounds on Game maybe
+	boundsWidth := g.Camera.ScaleInt(screenWidth)
+	boundsHeight := g.Camera.ScaleInt(screenHeight)
 	for _, particle := range g.World.Particles {
 		// Physics uses positive Y upwards; screen coordinates use positive Y downwards.
-		y := MetersToPixels(PixelsToMeters(screenHeight) - particle.Position.Y)
-		x := MetersToPixels(particle.Position.X)
-		DrawCircle(screen, x, y, MetersToPixels(particle.Radius), color.White)
+		x := MetersToPixels(g.Camera.ScaleFloat(particle.Position.X)) - g.Camera.X
+		y := boundsHeight - MetersToPixels(g.Camera.ScaleFloat(particle.Position.Y)) + g.Camera.Y
+		DrawCircle(screen, x, y, MetersToPixels(g.Camera.ScaleFloat(particle.Radius)), color.White)
+	}
+	if !g.World.DisableBounds {
+		DrawBounds(screen, g.Camera.X, g.Camera.Y, boundsWidth - g.Camera.X, boundsHeight + g.Camera.Y)
 	}
 }
 
 func (g *Game) Update() error {
 	RunKeybinds()
-
 	if Paused {
 		return nil
 	}
@@ -91,4 +105,20 @@ func TogglePause() {
 		msg = "Simulation paused"
 	}
 	logger.Info(msg)
+}
+
+// Draws rectangular bounds
+func DrawBounds(screen *ebiten.Image, x int, y int, width int, height int) {
+	clr := color.RGBA{64, 64, 64, 255}
+	// TODO: fix bounds when moving camera coords
+	// Top and bottom
+	for xi := x; xi < width; xi++ {
+		screen.Set(xi, y, clr)
+		screen.Set(xi, y+height-1, clr)
+	}
+	// left and right
+	for yi := y; yi < height; yi++ {
+		screen.Set(x, yi, clr)
+		screen.Set(x+width-1, yi, clr)
+	}
 }

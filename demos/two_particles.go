@@ -15,6 +15,15 @@ func runTwoParticlesDemo() {
 	windowWidth := monitorWidth * 2 / 3
 	windowHeight := monitorHeight * 2 / 3 
 
+	// Init the simulation
+	game := graphics.NewGame()
+	game.DeltaTime = deltaTime
+	game.World = physics.NewWorld()
+	game.World.Gravity = physics.UnitDown().Mul(gravityAcceleration)
+	game.World.Friction = friction
+	game.World.WindowBoundsRestitution = windowBoundsRestitution
+	game.World.ParticleRestitution = particleRestitution
+
 	// Particles
 	radius := 0.2 // m
 	p1 := physics.Particle2D{
@@ -28,20 +37,10 @@ func runTwoParticlesDemo() {
 	p2.Velocity.X = -p1.Velocity.X
 	p2.Mass *= 1.8
 	p2.Radius *= 1.8
+	game.World.Particles = []physics.Particle2D{p1, p2}
+	game.Camera.Zoom /= 2
 
-	// Init the simulation
-	game := graphics.Game{
-		DeltaTime: deltaTime,
-		World: physics.World{
-			Gravity:                 physics.UnitDown().Mul(gravityAcceleration),
-			Friction:                friction,
-			WindowBoundsRestitution: windowBoundsRestitution,
-			ParticleRestitution:     particleRestitution,
-			Particles:               []physics.Particle2D{p1, p2},
-		},
-	}
-
-	graphics.InitKeybinds(game)
+	graphics.InitKeybinds(&game)
 
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {

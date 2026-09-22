@@ -20,7 +20,7 @@ func InitGraphics(ticksPerSecond int) {
 	ebiten.SetTPS(ticksPerSecond)
 }
 
-func InitKeybinds(game Game) {
+func InitKeybinds(game *Game) {
 	RegisterKeybind(TogglePause, true, ebiten.KeyP) // pause
 
 	// exit
@@ -31,8 +31,16 @@ func InitKeybinds(game Game) {
 	RegisterKeybind(exit, false, ebiten.KeyQ)
 	RegisterKeybind(exit, false, ebiten.KeyC, ebiten.KeyControl)
 
-	// Zooming
-	RegisterKeybind(exit, false, ebiten.MouseButton4)
+	// Camera actions
+	// TODO: add on mouse buttons, need to extend keybinds with mouse binds
+	zoom := 1.01
+	RegisterKeybind(func() {game.Camera.Zoom *= zoom}, false, ebiten.KeyMinus) // KeyMinus on NO keyboards is plus
+	RegisterKeybind(func() {game.Camera.Zoom /= zoom}, false, ebiten.KeySlash) // KeySlash on NO keyboards is minus
+	move := 20
+	RegisterKeybind(func() {game.Camera.X -= move}, false, ebiten.KeyLeft)
+	RegisterKeybind(func() {game.Camera.X += move}, false, ebiten.KeyRight)
+	RegisterKeybind(func() {game.Camera.Y += move}, false, ebiten.KeyUp)
+	RegisterKeybind(func() {game.Camera.Y -= move}, false, ebiten.KeyDown)
 
 	// Step once
 	RegisterKeybind(func() { game.Step() }, true, ebiten.KeyS)

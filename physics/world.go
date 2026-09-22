@@ -21,6 +21,14 @@ type World struct {
 
 }
 
+func NewWorld() World {
+	return World{
+		ParticleToParticleGravitationalStrength: 1,
+		ParticleRestitution: 1,
+		WindowBoundsRestitution: 1,
+	}
+}
+
 // Advances every particle in the world by deltaTime seconds.
 func (w *World) Step(deltaTime float64) {
 	w.lastDeltaTime = deltaTime

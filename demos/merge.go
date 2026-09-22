@@ -41,7 +41,7 @@ func runMergeDemo() {
 		},
 	}
 
-	graphics.InitKeybinds(game)
+	graphics.InitKeybinds(&game)
 
 	if err := ebiten.RunGame(&game); err != nil {
 		if err.Error() != "" {
